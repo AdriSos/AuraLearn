@@ -20,8 +20,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 // 3. Le decimos qué puertas dejar abiertas
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/usuarios/registro", "/api/usuarios/login").permitAll() // Puertas libres
-                        .anyRequest().authenticated() // El resto estará bajo llave
+                        // Agregamos /api/profesores a las puertas libres (por ahora, para facilitar el desarrollo)
+                        .requestMatchers("/api/usuarios/registro", "/api/usuarios/login", "/api/profesores").permitAll()
+                        .anyRequest().authenticated()
                 );
 
         return http.build();
