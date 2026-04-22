@@ -28,4 +28,25 @@ public class ProfesorController {
     public ResponseEntity<List<Profesor>> obtenerTodos() {
         return ResponseEntity.ok(profesorRepository.findAll());
     }
+
+    // 3. Actualizar un profesor (PUT)
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarProfesor(@PathVariable Long id, @RequestBody Profesor detallesProfesor) {
+        return profesorRepository.findById(id).map(profesor -> {
+            profesor.setNombre(detallesProfesor.getNombre());
+            profesor.setCorreo(detallesProfesor.getCorreo());
+            profesor.setEspecialidad(detallesProfesor.getEspecialidad());
+            Profesor profesorActualizado = profesorRepository.save(profesor);
+            return ResponseEntity.ok(profesorActualizado);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // 4. Eliminar un profesor (DELETE)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarProfesor(@PathVariable Long id) {
+        return profesorRepository.findById(id).map(profesor -> {
+            profesorRepository.delete(profesor);
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }
