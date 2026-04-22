@@ -45,6 +45,22 @@ public class UsuarioController {
         return ResponseEntity.ok("Usuario registrado y correo enviado.");
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUsuario(@RequestBody Usuario credenciales) {
+        // Buscamos si el correo existe
+        var usuarioOpt = usuarioRepository.findByCorreo(credenciales.getCorreo());
+
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            // Verificamos si la contraseña coincide
+            if (usuario.getContrasena().equals(credenciales.getContrasena())) {
+                return ResponseEntity.ok(usuario); // ¡Éxito! Devolvemos los datos del usuario
+            }
+        }
+        // Si falla, enviamos un error 401 (No autorizado)
+        return ResponseEntity.status(401).body("Correo o contraseña incorrectos");
+    }
+
 
     private String generarContrasenaTemporal() {
         final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
