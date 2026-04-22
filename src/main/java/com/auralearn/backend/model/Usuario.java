@@ -21,10 +21,6 @@ public class Usuario {
     @Column(unique = true)
     private String correo;
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    // Aquí está el PLUS de seguridad que pediste usando una Expresión Regular (Regex)
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{8,}$",
-            message = "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial")
     private String contrasena;
 
     @NotBlank(message = "El rol es obligatorio")

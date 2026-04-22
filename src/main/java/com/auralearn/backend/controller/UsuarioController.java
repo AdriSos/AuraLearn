@@ -2,10 +2,12 @@ package com.auralearn.backend.controller;
 
 import com.auralearn.backend.model.Usuario;
 import com.auralearn.backend.repository.UsuarioRepository;
-import jakarta.validation.Valid;
+import com.auralearn.backend.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.SecureRandom;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -15,23 +17,45 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Esta es la "puerta" para el registro
-    @PostMapping("/registro")
-    public ResponseEntity<?> registrarUsuario(@Valid @RequestBody Usuario nuevoUsuario) {
+    @Autowired
+    private EmailService emailService; // Traemos a nuestro cartero
 
-        // 1. Verificamos si el correo ya existe en la base de datos
+    @PostMapping("/registro")
+    public ResponseEntity<?> registrarUsuario(@RequestBody Usuario nuevoUsuario) {
+
         if(usuarioRepository.findByCorreo(nuevoUsuario.getCorreo()).isPresent()) {
             return ResponseEntity.badRequest().body("Error: El correo ya está registrado en AuraLearn.");
         }
 
-        // 2. Por seguridad, si no envían rol, le asignamos "CLIENTE" por defecto
-        if(nuevoUsuario.getRol() == null || nuevoUsuario.getRol().isEmpty()){
-            nuevoUsuario.setRol("CLIENTE");
-        }
+        nuevoUsuario.setRol("CLIENTE");
 
-        // 3. Guardamos al usuario (¡Aquí Spring Boot automáticamente verifica que la contraseña cumpla con tus reglas de seguridad!)
+        String contrasenaTemporal = generarContrasenaTemporal();
+        nuevoUsuario.setContrasena(contrasenaTemporal);
+
         Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
 
-        return ResponseEntity.ok(usuarioGuardado);
+        String asunto = "¡Bienvenido a AuraLearn! Tu contraseña temporal";
+        String mensaje = "Hola " + usuarioGuardado.getNombreCompleto() + ",\n\n"
+                + "Te damos esta contraseña temporalmente. Una vez iniciando sesión, cambia tu contraseña en configuración.\n\n"
+                + "Tu contraseña temporal es: " + contrasenaTemporal + "\n\n"
+                + "¡Gracias por unirte a la mejor plataforma de educación!";
+
+        emailService.enviarCorreo(usuarioGuardado.getCorreo(), asunto, mensaje);
+
+        return ResponseEntity.ok("Usuario registrado y correo enviado.");
+    }
+
+
+    private String generarContrasenaTemporal() {
+        final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        // Genera una contraseña de 10 caracteres
+        for (int i = 0; i < 10; i++) {
+            int randomIndex = random.nextInt(chars.length());
+            sb.append(chars.charAt(randomIndex));
+        }
+
+        return "A1@" + sb.toString();
     }
 }
