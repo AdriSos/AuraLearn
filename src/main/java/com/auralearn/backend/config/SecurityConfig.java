@@ -21,7 +21,7 @@ public class SecurityConfig {
                 // 3. Le decimos qué puertas dejar abiertas
                 .authorizeHttpRequests(auth -> auth
                         // Agregamos /api/profesores a las puertas libres (por ahora, para facilitar el desarrollo)
-                        .requestMatchers("/api/usuarios/registro", "/api/usuarios/login", "/api/profesores").permitAll()
+                        .requestMatchers("/api/usuarios/registro", "/api/usuarios/login", "/api/profesores", "/api/cursos").permitAll()
                         .anyRequest().authenticated()
                 );
 
