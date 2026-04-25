@@ -11,8 +11,11 @@ public class Curso {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre del curso es obligatorio")
-    private String nombre;
+    @NotBlank(message = "El título del curso es obligatorio")
+    private String titulo;
+
+    @NotBlank(message = "La descripción del curso es obligatoria")
+    private String descripcion;
 
     // Aquí relacionamos el curso con el profesor
     @ManyToOne
@@ -21,13 +24,39 @@ public class Curso {
 
     public Curso() {}
 
-    // Getters y Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // ==============================
+    // GETTERS Y SETTERS
+    // ==============================
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public Long getId() {
+        return id;
+    }
 
-    public Profesor getProfesor() { return profesor; }
-    public void setProfesor(Profesor profesor) { this.profesor = profesor; }
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public Profesor getProfesor() {
+        return profesor;
+    }
+
+    public void setProfesor(Profesor profesor) {
+        this.profesor = profesor;
+    }
 }
