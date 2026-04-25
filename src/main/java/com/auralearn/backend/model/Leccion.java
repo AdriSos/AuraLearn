@@ -1,8 +1,6 @@
 package com.auralearn.backend.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "al_lecciones")
@@ -12,18 +10,13 @@ public class Leccion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El título es obligatorio")
     private String titulo;
-
-    @NotBlank(message = "La URL del video es obligatoria")
-    private String videoUrl; // Aquí irá el enlace al video que tú grabes
-
-    @NotNull(message = "El orden es obligatorio")
-    private Integer ordenSecuencia; // Este es el número: 1, 2, 3...
+    private String urlVideo; // Aquí guardaremos el link transformado de YouTube
+    private Integer orden;   // Para saber qué video va primero (1, 2, 3...)
 
     @ManyToOne
     @JoinColumn(name = "curso_id")
-    private Curso curso; // A qué curso pertenece este video
+    private Curso curso;
 
     public Leccion() {}
 
@@ -34,11 +27,11 @@ public class Leccion {
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
 
-    public String getVideoUrl() { return videoUrl; }
-    public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
+    public String getUrlVideo() { return urlVideo; }
+    public void setUrlVideo(String urlVideo) { this.urlVideo = urlVideo; }
 
-    public Integer getOrdenSecuencia() { return ordenSecuencia; }
-    public void setOrdenSecuencia(Integer ordenSecuencia) { this.ordenSecuencia = ordenSecuencia; }
+    public Integer getOrden() { return orden; }
+    public void setOrden(Integer orden) { this.orden = orden; }
 
     public Curso getCurso() { return curso; }
     public void setCurso(Curso curso) { this.curso = curso; }
