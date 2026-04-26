@@ -15,48 +15,25 @@ public class Curso {
     private String titulo;
 
     @NotBlank(message = "La descripción del curso es obligatoria")
+    @Column(columnDefinition = "TEXT")
     private String descripcion;
 
-    // Aquí relacionamos el curso con el profesor
     @ManyToOne
     @JoinColumn(name = "profesor_id")
     private Profesor profesor;
 
     public Curso() {}
 
-    // ==============================
-    // GETTERS Y SETTERS
-    // ==============================
+    // Getters y Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public Profesor getProfesor() {
-        return profesor;
-    }
-
-    public void setProfesor(Profesor profesor) {
-        this.profesor = profesor;
-    }
+    public Profesor getProfesor() { return profesor; }
+    public void setProfesor(Profesor profesor) { this.profesor = profesor; }
 }
