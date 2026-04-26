@@ -61,7 +61,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
                 if (datosUsuario.rol === 'ADMINISTRADOR') {
                     window.location.href = 'admin.html'; // Lo mandamos al panel
                 } else {
-                    window.location.href = 'cursos.html'; // Lo mandamos a sus clases
+                    window.location.href = 'alumno.html'; // Lo mandamos a sus clases
                 }
             }, 1500);
             
