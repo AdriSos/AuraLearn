@@ -151,12 +151,11 @@ document.getElementById('formCambiarPassword').addEventListener('submit', async 
     usuarioActual.contrasena = nuevaPass;
 
     try {
-        // Usamos POST directo a la ruta base de usuarios (SIN el /1 al final)
-        const respuesta = await fetch(URL_API_USUARIOS, {
-            method: 'POST',
+        const respuesta = await fetch(`${URL_API_USUARIOS}/${usuarioActual.id}`, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(usuarioActual)
-        });
+    });
 
         if(respuesta.ok) {
             localStorage.setItem('usuarioAuraLearn', JSON.stringify(usuarioActual)); // Actualizamos el caché
@@ -189,19 +188,45 @@ async function cargarCursosEstudiante() {
 
             cursos.forEach(curso => {
                 const nombreProf = curso.profesor ? curso.profesor.nombre : "Profesor AuraLearn";
+
+                // --- EL TRUCO DEL DICCIONARIO DE IMÁGENES ---
+                let tituloMinusculas = curso.titulo.toLowerCase();
+                let urlImagen = `https://picsum.photos/seed/${curso.id + 20}/400/200`; // Imagen aleatoria por defecto
+
+                // Si el título tiene la palabra "java", usa esta imagen de una laptop con código
+                if (tituloMinusculas.includes("java")) {
+                    urlImagen = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=400&auto=format&fit=crop";
+                }
+                // Si el título trata de desarrollo "web" o "html"
+                else if (tituloMinusculas.includes("web") || tituloMinusculas.includes("html")) {
+                    urlImagen = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=400&auto=format&fit=crop";
+                }
+                // Si el título trata de "python"
+                else if (tituloMinusculas.includes("python")) {
+                    urlImagen = "https://images.unsplash.com/photo-1526379095098-d400fd0bfce8?q=80&w=400&auto=format&fit=crop";
+                }
+                // Si el título trata de "base de datos" o "sql"
+                else if (tituloMinusculas.includes("base de datos") || tituloMinusculas.includes("sql") || tituloMinusculas.includes("nube")) {
+                    urlImagen = "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?q=80&w=400&auto=format&fit=crop";
+                }
+
                 grid.innerHTML += `
-                    <div class="curso-card">
-                        <h3>${curso.titulo}</h3>
-                        <div class="profesor"><i class="fa-solid fa-chalkboard-user"></i> ${nombreProf}</div>
-                        <p>${curso.descripcion.substring(0, 80)}...</p>
-                        <button class="btn-empezar" onclick="abrirCurso(${curso.id}, '${curso.titulo}')">Entrar al Curso</button>
+                    <div class="curso-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                        <div style="overflow: hidden;">
+                            <img src="${urlImagen}" alt="Portada" class="curso-portada">
+                        </div>
+                        <div style="padding: 20px; display: flex; flex-direction: column; flex-grow: 1;">
+                            <h3 style="margin-top: 0;">${curso.titulo}</h3>
+                            <div class="profesor"><i class="fa-solid fa-chalkboard-user"></i> ${nombreProf}</div>
+                            <div style="flex-grow: 1;"></div>
+                            <button class="btn-empezar" onclick="abrirCurso(${curso.id}, '${curso.titulo}')">Entrar al Curso</button>
+                        </div>
                     </div>
                 `;
             });
         }
     } catch (error) { grid.innerHTML = "<p>Error al cargar los cursos.</p>"; }
 }
-
 // ==========================================
 // 5. LA SALA DE CLASES (API YOUTUBE & PROGRESO)
 // ==========================================

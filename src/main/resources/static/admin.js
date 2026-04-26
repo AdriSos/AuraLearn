@@ -1,280 +1,184 @@
+const URL_API_USUARIOS = 'https://auralearn-pfxs.onrender.com/api/usuarios';
+const URL_API_CURSOS = 'https://auralearn-pfxs.onrender.com/api/cursos';
+const URL_API_LECCIONES = 'https://auralearn-pfxs.onrender.com/api/lecciones';
+
+let adminActual = null;
+
 // ==========================================
-// 1. SEGURIDAD Y CIERRE DE SESIÓN
+// 1. INICIALIZACIÓN Y SEGURIDAD
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    const usuarioString = localStorage.getItem('usuarioAuraLearn');
-    if (!usuarioString) { window.location.href = 'login.html'; return; }
-    
-    const usuario = JSON.parse(usuarioString);
-    if (usuario.rol !== 'ADMINISTRADOR') { window.location.href = 'login.html'; return; }
+    const adminString = localStorage.getItem('usuarioAuraLearn');
+    if (!adminString) {
+        window.location.href = 'login.html';
+        return;
+    }
 
-    document.getElementById('saludoAdmin').textContent = `Bienvenido, ${usuario.nombreCompleto}`;
+    adminActual = JSON.parse(adminString);
+
+    if (adminActual.rol !== 'ADMINISTRADOR') {
+        alert("Acceso denegado. No tienes permisos de administrador.");
+        window.location.href = 'alumno.html';
+        return;
+    }
+
+    // Cargamos tooooda la información al iniciar
+    cargarEstadisticasDashboard();
+    cargarProfesores();
+    cargarCursos();
+    cargarAlumnos();
 });
 
+// ==========================================
+// 2. NAVEGACIÓN DEL MENÚ LATERAL
+// ==========================================
+function ocultarTodasLasSecciones() {
+    ['sec-dashboard', 'sec-profesores', 'sec-cursos', 'sec-alumnos'].forEach(id => {
+        const sec = document.getElementById(id);
+        if (sec) sec.style.display = 'none';
+    });
+}
+
+document.querySelectorAll('.nav-links a').forEach(enlace => {
+    enlace.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+        e.target.closest('li').classList.add('active');
+
+        ocultarTodasLasSecciones();
+
+        const textoEnlace = e.target.textContent.toLowerCase();
+
+        if (textoEnlace.includes('dashboard')) {
+            const sec = document.getElementById('sec-dashboard');
+            if(sec) sec.style.display = 'block';
+            cargarEstadisticasDashboard();
+        }
+        else if (textoEnlace.includes('profesores')) {
+            const sec = document.getElementById('sec-profesores');
+            if(sec) sec.style.display = 'block';
+            cargarProfesores(); // ¡AHORA SÍ LLAMA A LA FUNCIÓN!
+        }
+        else if (textoEnlace.includes('cursos')) {
+            const sec = document.getElementById('sec-cursos');
+            if(sec) sec.style.display = 'block';
+            cargarCursos(); // ¡AHORA SÍ LLAMA A LA FUNCIÓN!
+        }
+        else if (textoEnlace.includes('alumnos')) {
+            const sec = document.getElementById('sec-alumnos');
+            if(sec) sec.style.display = 'block';
+            cargarAlumnos(); // ¡AHORA SÍ LLAMA A LA FUNCIÓN!
+        }
+    });
+});
+
+// ==========================================
+// 3. CARGAR ESTADÍSTICAS DEL DASHBOARD
+// ==========================================
+async function cargarEstadisticasDashboard() {
+    try {
+        const resUsuarios = await fetch(URL_API_USUARIOS);
+        if (resUsuarios.ok) {
+            const usuarios = await resUsuarios.json();
+            const alumnos = usuarios.filter(u => u.rol === 'ALUMNO');
+            const totalAlumnosElement = document.getElementById('totalAlumnos');
+            if(totalAlumnosElement) totalAlumnosElement.textContent = alumnos.length;
+        }
+
+        const resCursos = await fetch(URL_API_CURSOS);
+        if (resCursos.ok) {
+            const cursos = await resCursos.json();
+            const totalCursosElement = document.getElementById('totalCursos');
+            const cursoPopularElement = document.getElementById('cursoPopular');
+
+            if(totalCursosElement) totalCursosElement.textContent = cursos.length;
+
+            if(cursoPopularElement) {
+                if (cursos.length > 0) {
+                    cursoPopularElement.textContent = cursos[0].titulo;
+                } else {
+                    cursoPopularElement.textContent = "Aún no hay cursos";
+                }
+            }
+        }
+    } catch (error) { console.error("Error cargando el dashboard:", error); }
+}
+
+// ==========================================
+// 4. LLENAR LAS TABLAS (PROFESORES, CURSOS, ALUMNOS)
+// ==========================================
+async function cargarProfesores() {
+    try {
+        const res = await fetch(URL_API_USUARIOS);
+        if(res.ok) {
+            const usuarios = await res.json();
+            const profesores = usuarios.filter(u => u.rol === 'PROFESOR');
+            const tabla = document.querySelector('#sec-profesores .admin-table');
+            if(tabla) {
+                let html = '<tr><th>Nombre</th><th>Correo</th><th>Especialidad</th><th>Acciones</th></tr>';
+                profesores.forEach(p => {
+                    html += `<tr><td>${p.nombreCompleto}</td><td>${p.correo}</td><td>Profesor</td><td><button class="btn-secundario">Editar</button></td></tr>`;
+                });
+                tabla.innerHTML = html;
+            }
+        }
+    } catch(e) { console.error("Error cargando profesores", e); }
+}
+
+async function cargarCursos() {
+    try {
+        const res = await fetch(URL_API_CURSOS);
+        if(res.ok) {
+            const cursos = await res.json();
+            const tabla = document.querySelector('#sec-cursos .admin-table');
+            if(tabla) {
+                let html = '<tr><th>ID</th><th>Título</th><th>Descripción</th><th>Acciones</th></tr>';
+                cursos.forEach(c => {
+                    html += `<tr><td>${c.id}</td><td>${c.titulo}</td><td>${c.descripcion.substring(0,40)}...</td><td><button class="btn-secundario">Editar</button></td></tr>`;
+                });
+                tabla.innerHTML = html;
+            }
+        }
+    } catch(e) { console.error("Error cargando cursos", e); }
+}
+
+async function cargarAlumnos() {
+    try {
+        const res = await fetch(URL_API_USUARIOS);
+        if(res.ok) {
+            const usuarios = await res.json();
+            const alumnos = usuarios.filter(u => u.rol === 'ALUMNO');
+            const tabla = document.querySelector('#sec-alumnos .admin-table');
+            if(tabla) {
+                let html = '<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>';
+                alumnos.forEach(a => {
+                    html += `<tr><td>${a.nombreCompleto}</td><td>${a.correo}</td><td>Alumno</td><td><button class="btn-secundario">Editar</button></td></tr>`;
+                });
+                tabla.innerHTML = html;
+            }
+        }
+    } catch(e) { console.error("Error cargando alumnos", e); }
+}
+
+// ==========================================
+// 5. CERRAR SESIÓN Y MÓVILES
+// ==========================================
 document.getElementById('btnSalir').addEventListener('click', () => {
     localStorage.removeItem('usuarioAuraLearn');
     window.location.href = 'login.html';
 });
 
-
-// MENÚ HAMBURGUESA PARA MÓVILES
 const btnMenu = document.getElementById('btn-menu');
-const sidebar = document.querySelector('.sidebar');
-
-if (btnMenu) {
+if(btnMenu) {
     btnMenu.addEventListener('click', () => {
-        sidebar.classList.toggle('mostrar');
+        document.querySelector('.sidebar').classList.toggle('mostrar');
     });
 }
 
-// 2. NAVEGACIÓN DEL MENÚ LATERAL
-const menuLinks = document.querySelectorAll('.nav-links a');
-const secciones = document.querySelectorAll('.vista-admin');
-
-menuLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        // Quitar la clase active a todos y ponérsela al que le dimos clic
-        document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
-        link.parentElement.classList.add('active');
-        
-        // Ocultar todas las secciones
-        secciones.forEach(sec => sec.style.display = 'none');
-
-        // Mostrar la sección correspondiente
-        if(link.textContent.includes('Dashboard')) {
-            document.getElementById('sec-dashboard').style.display = 'block';
-        } else if(link.textContent.includes('Profesores')) {
-            document.getElementById('sec-profesores').style.display = 'block';
-            cargarProfesores(); 
-        } else if(link.textContent.includes('Cursos')) {
-            document.getElementById('sec-cursos').style.display = 'block';
-            cargarProfesoresSelect(); 
-            cargarCursos(); 
-        }
-    });
-});
-
 // ==========================================
-// 3. LÓGICA DE PROFESORES (CRUD)
+// 6. LÓGICA DE LECCIONES (VIDEOS YOUTUBE)
 // ==========================================
-const formProfesor = document.getElementById('formProfesor');
-const URL_API_PROFESORES = 'https://auralearn-pfxs.onrender.com/api/profesores';
-let idProfesorEditando = null;
-
-formProfesor.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btnGuardar = document.getElementById('btnGuardarProf');
-    const mensajeDiv = document.getElementById('mensajeProf');
-    btnGuardar.disabled = true;
-    mensajeDiv.className = "mensaje";
-
-    const datosProfesor = {
-        nombre: document.getElementById('profNombre').value,
-        correo: document.getElementById('profCorreo').value,
-        especialidad: document.getElementById('profEspecialidad').value
-    };
-
-    try {
-        const metodo = idProfesorEditando ? 'PUT' : 'POST';
-        const urlFinal = idProfesorEditando ? `${URL_API_PROFESORES}/${idProfesorEditando}` : URL_API_PROFESORES;
-
-        const respuesta = await fetch(urlFinal, {
-            method: metodo,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datosProfesor)
-        });
-
-        if(respuesta.ok) {
-            mensajeDiv.textContent = idProfesorEditando ? "¡Profesor actualizado!" : "¡Profesor registrado!";
-            mensajeDiv.classList.add('exito');
-            cancelarEdicionProf();
-            cargarProfesores(); 
-        } else {
-            mensajeDiv.textContent = "Error al guardar el profesor.";
-            mensajeDiv.classList.add('error');
-        }
-    } catch(error) {
-        mensajeDiv.textContent = "Error de conexión.";
-        mensajeDiv.classList.add('error');
-    } finally {
-        btnGuardar.disabled = false;
-    }
-});
-
-async function cargarProfesores() {
-    const tbody = document.getElementById('tablaProfesores');
-    tbody.innerHTML = "<tr><td colspan='4'>Cargando profesores...</td></tr>";
-    try {
-        const respuesta = await fetch(URL_API_PROFESORES);
-        if(respuesta.ok) {
-            const profesores = await respuesta.json();
-            tbody.innerHTML = ""; 
-            if(profesores.length === 0) { tbody.innerHTML = "<tr><td colspan='4'>No hay profesores registrados.</td></tr>"; return; }
-
-            profesores.forEach(prof => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${prof.nombre}</td>
-                        <td>${prof.correo}</td>
-                        <td>${prof.especialidad}</td>
-                        <td>
-                            <button onclick="prepararEdicionProf(${prof.id}, '${prof.nombre}', '${prof.correo}', '${prof.especialidad}')" class="btn-accion btn-editar" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="eliminarProfesor(${prof.id})" class="btn-accion btn-eliminar" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
-            });
-        }
-    } catch(error) { tbody.innerHTML = "<tr><td colspan='4'>Error al cargar los datos.</td></tr>"; }
-}
-
-window.prepararEdicionProf = function(id, nombre, correo, especialidad) {
-    idProfesorEditando = id;
-    document.getElementById('profNombre').value = nombre;
-    document.getElementById('profCorreo').value = correo;
-    document.getElementById('profEspecialidad').value = especialidad;
-    document.getElementById('btnGuardarProf').textContent = "Actualizar Profesor";
-    document.getElementById('btnCancelarProf').style.display = "inline-block";
-    window.scrollTo(0, 0); 
-};
-
-window.cancelarEdicionProf = function() {
-    idProfesorEditando = null;
-    formProfesor.reset();
-    document.getElementById('btnGuardarProf').textContent = "Guardar Profesor";
-    document.getElementById('btnCancelarProf').style.display = "none";
-};
-
-window.eliminarProfesor = async function(id) {
-    if(confirm("¿Seguro que deseas eliminar a este profesor?")) {
-        try {
-            const respuesta = await fetch(`${URL_API_PROFESORES}/${id}`, { method: 'DELETE' });
-            if(respuesta.ok) cargarProfesores(); else alert("Error al eliminar.");
-        } catch(error) { alert("Error de conexión."); }
-    }
-};
-
-// ==========================================
-// 4. LÓGICA DE CURSOS (CRUD)
-// ==========================================
-const formCurso = document.getElementById('formCurso');
-const URL_API_CURSOS = 'https://auralearn-pfxs.onrender.com/api/cursos';
-let idCursoEditando = null;
-
-async function cargarProfesoresSelect() {
-    const select = document.getElementById('cursoProfesor');
-    try {
-        const respuesta = await fetch(URL_API_PROFESORES);
-        if(respuesta.ok) {
-            const profesores = await respuesta.json();
-            select.innerHTML = '<option value="">Selecciona un profesor...</option>';
-            profesores.forEach(prof => {
-                select.innerHTML += `<option value="${prof.id}">${prof.nombre} (${prof.especialidad})</option>`;
-            });
-        }
-    } catch(error) { console.error("Error al cargar profesores."); }
-}
-
-formCurso.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btnGuardar = document.getElementById('btnGuardarCurso');
-    const mensajeDiv = document.getElementById('mensajeCurso');
-    btnGuardar.disabled = true;
-    mensajeDiv.className = "mensaje";
-
-    const datosCurso = {
-        titulo: document.getElementById('cursoTitulo').value,
-        descripcion: document.getElementById('cursoDescripcion').value,
-        profesor: { id: parseInt(document.getElementById('cursoProfesor').value) } 
-    };
-
-    try {
-        const metodo = idCursoEditando ? 'PUT' : 'POST';
-        const urlFinal = idCursoEditando ? `${URL_API_CURSOS}/${idCursoEditando}` : URL_API_CURSOS;
-
-        const respuesta = await fetch(urlFinal, {
-            method: metodo,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datosCurso)
-        });
-
-        if(respuesta.ok) {
-            mensajeDiv.textContent = idCursoEditando ? "¡Curso actualizado!" : "¡Curso registrado!";
-            mensajeDiv.classList.add('exito');
-            cancelarEdicionCurso();
-            cargarCursos(); 
-        } else {
-            mensajeDiv.textContent = "Error al guardar el curso.";
-            mensajeDiv.classList.add('error');
-        }
-    } catch(error) {
-        mensajeDiv.textContent = "Error de conexión.";
-        mensajeDiv.classList.add('error');
-    } finally {
-        btnGuardar.disabled = false;
-    }
-});
-
-async function cargarCursos() {
-    const tbody = document.getElementById('tablaCursos');
-    tbody.innerHTML = "<tr><td colspan='4'>Cargando cursos...</td></tr>";
-    try {
-        const respuesta = await fetch(URL_API_CURSOS);
-        if(respuesta.ok) {
-            const cursos = await respuesta.json();
-            tbody.innerHTML = "";
-            if(cursos.length === 0) { tbody.innerHTML = "<tr><td colspan='4'>No hay cursos registrados.</td></tr>"; return; }
-
-            cursos.forEach(curso => {
-                const nombreProf = curso.profesor ? curso.profesor.nombre : "Sin asignar";
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${curso.titulo}</strong></td>
-                        <td>${nombreProf}</td>
-                        <td>${curso.descripcion.substring(0, 40)}...</td>
-                        <td>
-                            <button onclick="gestionarLecciones(${curso.id}, '${curso.titulo}')" class="btn-accion btn-lecciones" title="Añadir Videos de YouTube"><i class="fa-brands fa-youtube"></i></button>
-                            <button onclick="prepararEdicionCurso(${curso.id}, '${curso.titulo}', '${curso.descripcion}', ${curso.profesor ? curso.profesor.id : ''})" class="btn-accion btn-editar" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="eliminarCurso(${curso.id})" class="btn-accion btn-eliminar" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
-            });
-        }
-    } catch(error) { tbody.innerHTML = "<tr><td colspan='4'>Error al cargar los datos.</td></tr>"; }
-}
-
-window.prepararEdicionCurso = function(id, titulo, descripcion, profesorId) {
-    idCursoEditando = id;
-    document.getElementById('cursoTitulo').value = titulo;
-    document.getElementById('cursoDescripcion').value = descripcion;
-    document.getElementById('cursoProfesor').value = profesorId;
-    document.getElementById('btnGuardarCurso').textContent = "Actualizar Curso";
-    document.getElementById('btnCancelarCurso').style.display = "inline-block";
-    window.scrollTo(0, 0);
-};
-
-window.cancelarEdicionCurso = function() {
-    idCursoEditando = null;
-    formCurso.reset();
-    document.getElementById('btnGuardarCurso').textContent = "Guardar Curso";
-    document.getElementById('btnCancelarCurso').style.display = "none";
-};
-
-window.eliminarCurso = async function(id) {
-    if(confirm("¿Seguro que deseas eliminar este curso?")) {
-        try {
-            const respuesta = await fetch(`${URL_API_CURSOS}/${id}`, { method: 'DELETE' });
-            if(respuesta.ok) cargarCursos(); else alert("Error al eliminar.");
-        } catch(error) { alert("Error de conexión."); }
-    }
-};
-
-// ==========================================
-// 5. LÓGICA DE LECCIONES (VIDEOS YOUTUBE)
-// ==========================================
-const URL_API_LECCIONES = 'https://auralearn-pfxs.onrender.com/api/lecciones';
-
 window.gestionarLecciones = function(cursoId, tituloCurso) {
     document.getElementById('tituloModalLecciones').textContent = `Videos: ${tituloCurso}`;
     document.getElementById('leccionCursoId').value = cursoId;
@@ -288,7 +192,6 @@ window.cerrarModalLecciones = function() {
     document.getElementById('iframeYouTube').src = "";
 };
 
-// 3. Transformar Link Normal -> Link Incrustable (Embed) + Limpieza de Interfaz
 function transformarUrlYouTube(url) {
     let videoId = "";
     if (url.includes("youtu.be/")) {
@@ -296,8 +199,6 @@ function transformarUrlYouTube(url) {
     } else if (url.includes("watch?v=")) {
         videoId = url.split("watch?v=")[1].split("&")[0];
     }
-
-    // Si encontramos el ID, le pegamos los parámetros secretos para limpiar el reproductor
     if (videoId) {
         return `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&iv_load_policy=3`;
     }

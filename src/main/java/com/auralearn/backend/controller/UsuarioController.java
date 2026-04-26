@@ -89,4 +89,10 @@ public class UsuarioController {
                 })
                 .orElse(org.springframework.http.ResponseEntity.notFound().build());
     }
+
+    // Puerta para obtener a TODOS los usuarios (Profesores y Alumnos)
+    @GetMapping
+    public java.util.List<Usuario> obtenerTodosLosUsuarios() {
+        return usuarioRepository.findAll();
+    }
 }
