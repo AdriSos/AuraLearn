@@ -23,26 +23,35 @@ public class UsuarioController {
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@RequestBody Usuario nuevoUsuario) {
 
+        if(usuarioRepository.findByCorreo(nuevoUsuario.getCorreo()).isPresent()) {
+            return ResponseEntity.badRequest().body("Error: El correo ya está registrado en AuraLearn.");
+        }
+
+        // Respetar el rol si ya viene (como PROFESOR), si no, poner ALUMNO
         if (nuevoUsuario.getRol() == null || nuevoUsuario.getRol().isEmpty()) {
             nuevoUsuario.setRol("ALUMNO");
         }
 
-        nuevoUsuario.setRol("CLIENTE");
-
         String contrasenaTemporal = generarContrasenaTemporal();
         nuevoUsuario.setContrasena(contrasenaTemporal);
 
+        // Guardamos al usuario SIEMPRE, sin importar si el correo falla
         Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
 
-        String asunto = "¡Bienvenido a AuraLearn! Tu contraseña temporal";
-        String mensaje = "Hola " + usuarioGuardado.getNombreCompleto() + ",\n\n"
-                + "Te damos esta contraseña temporalmente. Una vez iniciando sesión, cambia tu contraseña en configuración.\n\n"
-                + "Tu contraseña temporal es: " + contrasenaTemporal + "\n\n"
-                + "¡Gracias por unirte a la mejor plataforma de educación!";
+        // ESCUDO ANTI-ERRORES PARA EL CORREO
+        try {
+            String asunto = "¡Bienvenido a AuraLearn! Tu contraseña temporal";
+            String mensaje = "Hola " + usuarioGuardado.getNombreCompleto() + ",\n\n"
+                    + "Te damos esta contraseña temporalmente. Una vez iniciando sesión, cambia tu contraseña en configuración.\n\n"
+                    + "Tu contraseña temporal es: " + contrasenaTemporal + "\n\n"
+                    + "¡Gracias por unirte a la mejor plataforma de educación!";
 
-        emailService.enviarCorreo(usuarioGuardado.getCorreo(), asunto, mensaje);
+            emailService.enviarCorreo(usuarioGuardado.getCorreo(), asunto, mensaje);
+        } catch (Exception e) {
+            System.out.println("El usuario se guardó, pero hubo un error enviando el correo: " + e.getMessage());
+        }
 
-        return ResponseEntity.ok("Usuario registrado y correo enviado.");
+        return ResponseEntity.ok("Usuario registrado exitosamente.");
     }
 
     @PostMapping("/login")
