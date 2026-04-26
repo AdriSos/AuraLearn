@@ -14,14 +14,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Permite las conexiones desde tu frontend en Hostinger
+                // 1. Permite las conexiones desde tu frontend
                 .cors(Customizer.withDefaults())
-                // 2. Desactiva la protección CSRF (obligatorio para que funcionen las APIs REST)
+                // 2. Desactiva la protección CSRF
                 .csrf(csrf -> csrf.disable())
-                // 3. Le decimos qué puertas dejar abiertas
+                // 3. LA LLAVE MAESTRA: /** significa "permite esta ruta y cualquier acción dentro de ella"
                 .authorizeHttpRequests(auth -> auth
-                        // Agregamos /api/profesores a las puertas libres (por ahora, para facilitar el desarrollo)
-                        .requestMatchers("/api/usuarios/registro", "/api/usuarios/login", "/api/profesores", "/api/cursos", "/api/lecciones").permitAll()
+                        .requestMatchers("/api/usuarios/**", "/api/profesores/**", "/api/cursos/**", "/api/lecciones/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
