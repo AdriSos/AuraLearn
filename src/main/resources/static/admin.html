@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraLearn - Panel de Administración</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Aura<span class="highlight">Learn</span></h2>
+            <p>Panel Admin</p>
+        </div>
+        <ul class="nav-links">
+            <li class="active"><a href="#Dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+            <li><a href="#Profesores"><i class="fa-solid fa-chalkboard-user"></i> Profesores</a></li>
+            <li><a href="#Cursos"><i class="fa-solid fa-book"></i> Cursos</a></li>
+            <li><a href="#Alumnos"><i class="fa-solid fa-users"></i> Alumnos</a></li>
+        </ul>
+        <div class="logout">
+            <button id="btnSalir"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header>
+            <button id="btn-menu" class="btn-toggle">☰</button>
+        </header>
+
+
+        <div id="sec-dashboard" class="vista-admin">
+            <section class="dashboard-cards">
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                    <div class="card-info">
+                        <h3>Total Alumnos</h3>
+                        <p id="totalAlumnos">0</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-video"></i></div>
+                    <div class="card-info">
+                        <h3>Total Cursos</h3>
+                        <p id="totalCursos">0</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-star"></i></div>
+                    <div class="card-info">
+                        <h3>Curso más popular</h3>
+                        <p id="cursoEstrella">Cargando...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="sec-profesores" class="vista-admin" style="display: none;">
+            <section class="admin-section">
+                <h2>Registrar / Editar Profesor</h2>
+                <form id="formProfesor" class="admin-form">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Nombre Completo</label>
+                            <input type="text" id="profNombre" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Correo Electrónico</label>
+                            <input type="email" id="profCorreo" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Especialidad</label>
+                            <input type="text" id="profEspecialidad" placeholder="Ej. Matemáticas" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" id="btnGuardarProf">Guardar Profesor</button>
+                    <button type="button" class="btn-cancelar" id="btnCancelarProf" style="display:none;" onclick="cancelarEdicionProf()">Cancelar</button>
+                    <div id="mensajeProf" class="mensaje"></div>
+                </form>
+            </section>
+
+            <section class="admin-section" style="margin-top: 20px;">
+                <h2>Lista de Profesores</h2>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Especialidad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaProfesores"></tbody>
+                </table>
+            </section>
+        </div>
+
+        <div id="sec-cursos" class="vista-admin" style="display: none;">
+            <section class="admin-section">
+                <h2>Crear / Editar Curso</h2>
+                <form id="formCurso" class="admin-form">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Título del Curso</label>
+                            <input type="text" id="cursoTitulo" required placeholder="Ej. Lógica de Programación">
+                        </div>
+                        <div class="input-group">
+                            <label>Profesor Asignado</label>
+                            <select id="cursoProfesor" required class="custom-select">
+                                <option value="">Selecciona un profesor...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Descripción del Curso</label>
+                            <textarea id="cursoDescripcion" rows="3" required class="custom-textarea" placeholder="¿De qué trata este curso?"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" id="btnGuardarCurso">Guardar Curso</button>
+                    <button type="button" class="btn-cancelar" id="btnCancelarCurso" style="display:none;" onclick="cancelarEdicionCurso()">Cancelar</button>
+                    <div id="mensajeCurso" class="mensaje"></div>
+                </form>
+            </section>
+
+            <section class="admin-section" style="margin-top: 20px;">
+                <h2>Lista de Cursos</h2>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Profesor</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCursos"></tbody>
+                </table>
+            </section>
+        </div>
+
+    </main>
+    <div id="modalLecciones" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="cerrarModalLecciones()">&times;</span>
+            <h2 id="tituloModalLecciones">Videos del Curso</h2>
+
+            <form id="formLeccion" class="admin-form" style="margin-top: 15px; border-bottom: 1px solid #333; padding-bottom: 15px;">
+                <input type="hidden" id="leccionCursoId">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Título del Video</label>
+                        <input type="text" id="leccionTitulo" required placeholder="Ej. 1. Instalación de Java">
+                    </div>
+                    <div class="input-group">
+                        <label>Enlace de YouTube</label>
+                        <input type="url" id="leccionUrl" required placeholder="Ej. https://www.youtube.com/watch?v=...">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" id="btnGuardarLeccion">Agregar Video</button>
+            </form>
+
+            <div class="contenedor-videos" style="margin-top: 20px;">
+                <h3>Videos Añadidos:</h3>
+                <ul id="listaLecciones" class="lista-videos">
+                </ul>
+
+                <div id="reproductorVideo" style="margin-top: 20px; display: none;">
+                    <iframe id="iframeYouTube" width="100%" height="315" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="admin.js"></script>
+</body>
+</html>

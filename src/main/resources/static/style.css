@@ -1,0 +1,209 @@
+/* Configuraciones generales y tema oscuro por defecto */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #121212; /* Fondo oscuro profesional */
+    color: #ffffff; /* Texto blanco */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 450px;
+    padding: 20px;
+}
+
+.form-box {
+    background-color: #1e1e1e; /* Un negro ligeramente más claro para la caja */
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    border-top: 4px solid #08606E; /* Tu color de detalle */
+}
+
+.title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+}
+
+.highlight {
+    color: #08606E; /* Tu color en el logo */
+}
+
+.subtitle {
+    text-align: center;
+    color: #a0a0a0;
+    margin-bottom: 30px;
+    font-size: 0.9rem;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #cccccc;
+    font-size: 0.9rem;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    background-color: #2a2a2a;
+    border: 1px solid #333333;
+    border-radius: 5px;
+    color: white;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #08606E; /* Tu color al seleccionar el input */
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background-color: #08606E; /* Tu color para el botón principal */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #064a55; /* Un tono un poco más oscuro al pasar el mouse */
+}
+
+.mensaje {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    padding: 10px;
+    border-radius: 5px;
+    display: none; /* Oculto por defecto */
+}
+
+.exito { background-color: rgba(40, 167, 69, 0.2); color: #28a745; display: block;}
+.error { background-color: rgba(220, 53, 69, 0.2); color: #dc3545; display: block;}
+
+/* Estilos para los requisitos de contraseña */
+.requisitos-password {
+    list-style: none;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    padding-left: 5px;
+}
+
+.requisitos-password li {
+    margin-bottom: 5px;
+    transition: color 0.3s ease;
+}
+
+.requisitos-password li::before {
+    content: "✖ ";
+    margin-right: 5px;
+}
+
+.invalido {
+    color: #888888; /* Gris cuando no cumple */
+}
+
+/* La clase que pondrá el texto en verde cuando cumpla el requisito */
+.valido {
+    color: #28a745; /* Verde de éxito */
+}
+
+.valido::before {
+    content: "✔ ";
+}
+
+/* Estilos para los nuevos enlaces */
+.enlaces-extra {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.enlaces-extra p {
+    margin-bottom: 10px;
+}
+
+.enlaces-extra a {
+    color: #08606E;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.enlaces-extra a:hover {
+    color: #0bd1ed; /* Un tono más brillante al pasar el mouse */
+}
+
+/* =========================================
+   Estilos corregidos para el ojito del Login
+   ========================================= */
+.password-wrapper {
+    position: relative; /* Esto es clave para que el ojito se guíe por esta caja */
+    display: block;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 40px; /* Dejamos espacio a la derecha para que el texto no pise el ojito */
+}
+
+.btn-ojo {
+    position: absolute;
+    right: 10px; /* Lo pegamos a la derecha */
+    top: 50%; /* Lo bajamos a la mitad */
+    transform: translateY(-50%); /* Lo centramos perfectamente en vertical */
+    background: none;
+    border: none;
+    color: #a0a0a0;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0;
+}
+
+.btn-ojo:hover {
+    color: #ffffff;
+}
+
+/* Estilos para móviles */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: -250px; /* Esconde el menú a la izquierda */
+        transition: 0.3s;
+        z-index: 1000;
+        height: 100vh;
+    }
+
+    .sidebar.active {
+        left: 0; /* Lo muestra al activarlo */
+    }
+
+    /* Ajuste para que el contenido ocupe todo el ancho */
+    .main-content {
+        margin-left: 0 !important;
+        width: 100%;
+    }
+}

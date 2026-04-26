@@ -1,0 +1,96 @@
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+body { display: flex; background-color: #121212; color: #ffffff; min-height: 100vh; }
+
+.highlight { color: #08606E; }
+
+/* Menú Lateral */
+.sidebar { width: 250px; background-color: #1a1a1a; padding: 20px 0; display: flex; flex-direction: column; border-right: 2px solid #08606E; }
+.sidebar-header { text-align: center; margin-bottom: 30px; }
+.sidebar-header h2 { font-size: 2rem; }
+.sidebar-header p { color: #a0a0a0; font-size: 0.9rem; }
+
+.nav-links { list-style: none; flex-grow: 1; }
+.nav-links li { margin-bottom: 5px; }
+.nav-links a { display: block; padding: 15px 20px; color: #cccccc; text-decoration: none; transition: 0.3s; }
+.nav-links a i { margin-right: 10px; width: 20px; text-align: center; }
+.nav-links a:hover, .nav-links li.active a { background-color: #08606E; color: white; border-radius: 0 20px 20px 0; margin-right: 15px;}
+
+.logout { padding: 20px; }
+.logout button { width: 100%; padding: 10px; background-color: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+.logout button:hover { background-color: #dc3545; color: white; }
+
+/* Contenido Principal */
+.main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+header { margin-bottom: 30px; }
+
+/* Tarjetas */
+.dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
+.card { background-color: #1e1e1e; padding: 20px; border-radius: 10px; display: flex; align-items: center; border-left: 4px solid #08606E; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+.card-icon { font-size: 2.5rem; color: #08606E; margin-right: 20px; }
+.card-info h3 { font-size: 1rem; color: #a0a0a0; margin-bottom: 5px; }
+.card-info p { font-size: 1.5rem; font-weight: bold; }
+
+.admin-section { background-color: #1e1e1e; padding: 30px; border-radius: 10px; }
+.admin-section h2 { margin-bottom: 20px; color: #08606E; border-bottom: 1px solid #333; padding-bottom: 10px;}
+
+/* Estilos para Formularios y Tablas del Admin */
+.admin-form .input-row { display: flex; gap: 15px; margin-bottom: 15px; }
+.admin-form .input-group { flex: 1; }
+.admin-form label { display: block; margin-bottom: 8px; color: #ccc; font-size: 0.9rem;}
+.admin-form input, .custom-select, .custom-textarea { width: 100%; padding: 10px; background-color: #2a2a2a; border: 1px solid #333; border-radius: 5px; color: white; margin-top: 5px; }
+.admin-form input:focus, .custom-select:focus, .custom-textarea:focus { outline: none; border-color: #08606E; }
+
+.btn-primary { padding: 10px 20px; background-color: #08606E; color: white; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; font-weight: bold;}
+.btn-primary:hover { background-color: #064a55; }
+.btn-cancelar { background-color: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
+
+.admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+.admin-table th, .admin-table td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+.admin-table th { background-color: #08606E; color: white; }
+.admin-table tr:hover { background-color: #2a2a2a; }
+
+/* Botones de Acción (CRUD) */
+.btn-accion { background: none; border: none; cursor: pointer; font-size: 1.1rem; margin-right: 10px; transition: 0.3s; }
+.btn-editar { color: #ffc107; } 
+.btn-editar:hover { color: #e0a800; }
+.btn-eliminar { color: #dc3545; } 
+.btn-eliminar:hover { color: #c82333; }
+.btn-lecciones { color: #17a2b8; } /* Azul claro para los videos */
+.btn-lecciones:hover { color: #138496; }
+
+.mensaje { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; text-align: center;}
+.exito { background-color: rgba(40, 167, 69, 0.2); color: #28a745; display: block;}
+.error { background-color: rgba(220, 53, 69, 0.2); color: #dc3545; display: block;}
+
+/* ==========================================
+   Estilos para la Ventana de Videos (Modal)
+   ========================================== */
+.modal {
+    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+    width: 100%; height: 100%; overflow: auto;
+    background-color: rgba(0,0,0,0.8);
+}
+
+.modal-content {
+    background-color: #1e1e1e; margin: 5% auto; padding: 30px;
+    border: 1px solid #08606E; width: 90%; max-width: 800px;
+    border-radius: 10px; color: white; position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.close-btn {
+    color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;
+}
+.close-btn:hover { color: #fff; text-decoration: none; }
+
+.lista-videos { list-style: none; margin-top: 10px; max-height: 200px; overflow-y: auto;}
+.lista-videos li {
+    background-color: #2a2a2a; padding: 12px; margin-bottom: 5px;
+    border-radius: 5px; display: flex; justify-content: space-between; align-items: center;
+}
+
+.btn-ver-video {
+    background-color: #17a2b8; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-weight: bold;
+}
+.btn-ver-video:hover { background-color: #138496; }

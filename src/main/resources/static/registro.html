@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraLearn - Registro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-box">
+            <h1 class="title">Aura<span class="highlight">Learn</span></h1>
+            <p class="subtitle">Únete a la mejor plataforma de educación</p>
+            
+            <form id="registroForm">
+                <div class="input-group">
+                    <label for="nombre">Nombre Completo</label>
+                    <input type="text" id="nombre" required placeholder="Ej. Juan Pérez">
+                </div>
+                
+                <div class="input-group">
+                    <label for="correo">Correo Electrónico</label>
+                    <input type="email" id="correo" required placeholder="tu@correo.com">
+                </div>
+                
+                <button type="submit" class="btn-primary" id="btnRegistro">Registrarse</button>
+            </form>
+            
+            <div class="enlaces-extra">
+                <p>¿Ya tienes cuenta? <a href="login.html">Iniciar sesión</a></p>
+                <p><a href="recuperar.html">Olvidé mi contraseña</a></p>
+            </div>
+
+            <div id="mensaje" class="mensaje"></div>
+        </div>
+    </div>
+    <script src="registro.js"></script>
+</body>
+</html>
