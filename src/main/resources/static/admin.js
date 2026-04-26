@@ -288,6 +288,7 @@ window.cerrarModalLecciones = function() {
     document.getElementById('iframeYouTube').src = "";
 };
 
+// 3. Transformar Link Normal -> Link Incrustable (Embed) + Limpieza de Interfaz
 function transformarUrlYouTube(url) {
     let videoId = "";
     if (url.includes("youtu.be/")) {
@@ -295,7 +296,12 @@ function transformarUrlYouTube(url) {
     } else if (url.includes("watch?v=")) {
         videoId = url.split("watch?v=")[1].split("&")[0];
     }
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+
+    // Si encontramos el ID, le pegamos los parámetros secretos para limpiar el reproductor
+    if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&iv_load_policy=3`;
+    }
+    return url;
 }
 
 document.getElementById('formLeccion').addEventListener('submit', async (e) => {
