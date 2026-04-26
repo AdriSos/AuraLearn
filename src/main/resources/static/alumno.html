@@ -39,9 +39,40 @@
         </div>
     </div>
 
+    <div id="sec-sala-clases" class="vista-alumno" style="display: none;">
+        <button id="btnVolverCursos" class="btn-cancelar" style="margin-bottom: 20px;"><i class="fa-solid fa-arrow-left"></i> Volver a Cursos</button>
+        <h2 id="tituloCursoActual">Título del Curso</h2>
+
+        <div class="sala-layout">
+            <div class="video-container">
+                <div id="reproductorYoutube"></div>
+            </div>
+            <div class="playlist-container">
+                <h3>Lecciones del Curso</h3>
+                <ul id="listaLeccionesAlumno" class="playlist">
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <div id="sec-perfil" class="vista-alumno" style="display: none;">
-        <h2>Configuración de Perfil</h2>
-        <p>Aquí pondremos el cambio de contraseñas y foto de perfil.</p>
+        <h2>Mi Perfil</h2>
+        <div class="perfil-card">
+            <div class="perfil-info">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <h3 id="perfilNombre">Cargando...</h3>
+                <p id="perfilCorreo">Cargando...</p>
+            </div>
+            <form id="formCambiarPassword" class="admin-form" style="margin-top: 20px;">
+                <h3>Cambiar Contraseña</h3>
+                <div class="input-group">
+                    <label>Nueva Contraseña (Mínimo 8 caracteres)</label>
+                    <input type="password" id="nuevaPassword" required minlength="8" placeholder="Escribe tu nueva clave">
+                </div>
+                <button type="submit" class="btn-primary">Actualizar Contraseña</button>
+                <div id="mensajePerfil" class="mensaje"></div>
+            </form>
+        </div>
     </div>
 
 </main>
