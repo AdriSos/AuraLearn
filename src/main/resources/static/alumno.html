@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AuraLearn - Mis Cursos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="alumno.css">
+    <link rel="stylesheet" href="alumno.css?v=3">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -16,7 +17,7 @@
     </div>
     <ul class="nav-links">
         <li class="active"><a href="#Cursos" id="linkCursos"><i class="fa-solid fa-graduation-cap"></i> Cursos Disponibles</a></li>
-        <li><a href="#Perfil" id="linkPerfil"><i class="fa-solid fa-user-gear"></i> Mi Perfil</a></li>
+        <li><a href="#Perfil" id="linkPerfil"><img id="imgMenuAvatar" src="https://ui-avatars.com/api/?name=U&background=08606E&color=fff" class="menu-avatar"> Mi Perfil</a></li>
     </ul>
     <div class="logout">
         <button id="btnSalir"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
@@ -48,9 +49,11 @@
                 <div id="reproductorYoutube"></div>
             </div>
             <div class="playlist-container">
-                <h3>Lecciones del Curso</h3>
-                <ul id="listaLeccionesAlumno" class="playlist">
-                </ul>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Lecciones</h3>
+                    <button id="btnSiguienteLeccion" class="btn-llamar-atencion" style="display: none;">Continuar <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <ul id="listaLeccionesAlumno" class="playlist"></ul>
             </div>
         </div>
     </div>
@@ -59,24 +62,67 @@
         <h2>Mi Perfil</h2>
         <div class="perfil-card">
             <div class="perfil-info">
-                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <img id="imgAvatar" src="https://ui-avatars.com/api/?name=Usuario&background=08606E&color=fff" alt="Avatar" class="avatar-img">
+
+                <input type="file" id="inputFileAvatar" accept="image/*" style="display: none;">
+                <label for="inputFileAvatar" class="btn-secundario" style="display: inline-block; margin-top: 10px; margin-bottom: 15px; cursor: pointer;">
+                    <i class="fa-solid fa-camera"></i> Subir foto desde mi PC
+                </label>
+
                 <h3 id="perfilNombre">Cargando...</h3>
                 <p id="perfilCorreo">Cargando...</p>
             </div>
+
             <form id="formCambiarPassword" class="admin-form" style="margin-top: 20px;">
                 <h3>Cambiar Contraseña</h3>
                 <div class="input-group">
-                    <label>Nueva Contraseña (Mínimo 8 caracteres)</label>
-                    <input type="password" id="nuevaPassword" required minlength="8" placeholder="Escribe tu nueva clave">
+                    <label>Nueva Contraseña</label>
+
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" id="nuevaPassword" required placeholder="Escribe tu nueva clave" style="width: 100%; padding-right: 40px;">
+                        <button type="button" id="btnOjoPerfil" style="position: absolute; right: 10px; background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 1.2rem;">
+                            <i id="iconoOjoPerfil" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="password-reqs" id="reqsPassword" style="margin-top: 10px;">
+                        <p id="req1"><i class="fa-solid fa-circle-xmark"></i> Mínimo 8 caracteres</p>
+                        <p id="req2"><i class="fa-solid fa-circle-xmark"></i> Al menos un número (0-9)</p>
+                        <p id="req3"><i class="fa-solid fa-circle-xmark"></i> Al menos una letra mayúscula</p>
+                        <p id="req4"><i class="fa-solid fa-circle-xmark"></i> Un carácter especial (@$!%*?&)</p>
+                    </div>
                 </div>
-                <button type="submit" class="btn-primary">Actualizar Contraseña</button>
+                <button type="submit" id="btnActualizarPass" class="btn-primary" disabled>Actualizar Contraseña</button>
                 <div id="mensajePerfil" class="mensaje"></div>
             </form>
         </div>
     </div>
 
+    <div id="sec-fin-curso" class="vista-alumno" style="display: none; text-align: center;">
+        <h2>¡Felicidades! Has terminado el curso</h2>
+        <h3 id="tituloCursoFin" class="highlight" style="margin-bottom: 20px;"></h3>
+
+        <div class="perfil-card" style="margin: 0 auto; max-width: 600px;">
+            <h3>Déjanos tu opinión (Obligatorio)</h3>
+            <form id="formEvaluacion" style="margin-top: 15px;">
+
+                <div class="estrellas" id="calificacionEstrellas" style="font-size: 2.5rem; color: #555; cursor: pointer; margin-bottom: 15px;">
+                    <i class="fa-solid fa-star" data-valor="1"></i>
+                    <i class="fa-solid fa-star" data-valor="2"></i>
+                    <i class="fa-solid fa-star" data-valor="3"></i>
+                    <i class="fa-solid fa-star" data-valor="4"></i>
+                    <i class="fa-solid fa-star" data-valor="5"></i>
+                </div>
+                <input type="hidden" id="valorCalificacion" value="0" required>
+
+                <textarea id="comentarioCurso" class="admin-input" rows="4" placeholder="¿Qué te pareció el curso? Escribe tu comentario aquí..." required style="width: 100%; margin-bottom: 20px; padding: 10px; border-radius: 5px; background: var(--bg-color); color: var(--text-color);"></textarea>
+
+                <button type="submit" class="btn-primary" id="btnGenerarPDF"><i class="fa-solid fa-file-pdf"></i> Enviar y Descargar Reconocimiento</button>
+            </form>
+        </div>
+    </div>
 </main>
 
-<script src="alumno.js"></script>
+<script src="alumno.js?v=3"></script>
 </body>
 </html>
