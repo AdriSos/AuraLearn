@@ -23,8 +23,8 @@ public class UsuarioController {
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@RequestBody Usuario nuevoUsuario) {
 
-        if(usuarioRepository.findByCorreo(nuevoUsuario.getCorreo()).isPresent()) {
-            return ResponseEntity.badRequest().body("Error: El correo ya está registrado en AuraLearn.");
+        if (nuevoUsuario.getRol() == null || nuevoUsuario.getRol().isEmpty()) {
+            nuevoUsuario.setRol("ALUMNO");
         }
 
         nuevoUsuario.setRol("CLIENTE");

@@ -22,11 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Cargamos tooooda la información al iniciar
+    // Cargamos la información inicial
     cargarEstadisticasDashboard();
     cargarProfesores();
     cargarCursos();
     cargarAlumnos();
+    configurarFormularioProfesor(); // Activamos el botón para guardar profesores
 });
 
 // ==========================================
@@ -42,10 +43,8 @@ function ocultarTodasLasSecciones() {
 document.querySelectorAll('.nav-links a').forEach(enlace => {
     enlace.addEventListener('click', (e) => {
         e.preventDefault();
-
         document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
         e.target.closest('li').classList.add('active');
-
         ocultarTodasLasSecciones();
 
         const textoEnlace = e.target.textContent.toLowerCase();
@@ -58,17 +57,17 @@ document.querySelectorAll('.nav-links a').forEach(enlace => {
         else if (textoEnlace.includes('profesores')) {
             const sec = document.getElementById('sec-profesores');
             if(sec) sec.style.display = 'block';
-            cargarProfesores(); // ¡AHORA SÍ LLAMA A LA FUNCIÓN!
+            cargarProfesores();
         }
         else if (textoEnlace.includes('cursos')) {
             const sec = document.getElementById('sec-cursos');
             if(sec) sec.style.display = 'block';
-            cargarCursos(); // ¡AHORA SÍ LLAMA A LA FUNCIÓN!
+            cargarCursos();
         }
         else if (textoEnlace.includes('alumnos')) {
             const sec = document.getElementById('sec-alumnos');
             if(sec) sec.style.display = 'block';
-            cargarAlumnos(); // ¡AHORA SÍ LLAMA A LA FUNCIÓN!
+            cargarAlumnos();
         }
     });
 });
@@ -81,7 +80,8 @@ async function cargarEstadisticasDashboard() {
         const resUsuarios = await fetch(URL_API_USUARIOS);
         if (resUsuarios.ok) {
             const usuarios = await resUsuarios.json();
-            const alumnos = usuarios.filter(u => u.rol === 'ALUMNO');
+            // Contamos alumnos y a los que se registraron como "CLIENTE"
+            const alumnos = usuarios.filter(u => u.rol === 'ALUMNO' || u.rol === 'CLIENTE');
             const totalAlumnosElement = document.getElementById('totalAlumnos');
             if(totalAlumnosElement) totalAlumnosElement.textContent = alumnos.length;
         }
@@ -93,13 +93,8 @@ async function cargarEstadisticasDashboard() {
             const cursoPopularElement = document.getElementById('cursoPopular');
 
             if(totalCursosElement) totalCursosElement.textContent = cursos.length;
-
             if(cursoPopularElement) {
-                if (cursos.length > 0) {
-                    cursoPopularElement.textContent = cursos[0].titulo;
-                } else {
-                    cursoPopularElement.textContent = "Aún no hay cursos";
-                }
+                cursoPopularElement.textContent = cursos.length > 0 ? cursos[0].titulo : "Aún no hay cursos";
             }
         }
     } catch (error) { console.error("Error cargando el dashboard:", error); }
@@ -113,13 +108,18 @@ async function cargarProfesores() {
         const res = await fetch(URL_API_USUARIOS);
         if(res.ok) {
             const usuarios = await res.json();
-            const profesores = usuarios.filter(u => u.rol === 'PROFESOR');
+            // Filtramos a los que sí tengan el rol correcto
+            const profesores = usuarios.filter(u => u.rol && u.rol.toUpperCase() === 'PROFESOR');
             const tabla = document.querySelector('#sec-profesores .admin-table');
             if(tabla) {
                 let html = '<tr><th>Nombre</th><th>Correo</th><th>Especialidad</th><th>Acciones</th></tr>';
-                profesores.forEach(p => {
-                    html += `<tr><td>${p.nombreCompleto}</td><td>${p.correo}</td><td>Profesor</td><td><button class="btn-secundario">Editar</button></td></tr>`;
-                });
+                if(profesores.length === 0) {
+                    html += `<tr><td colspan="4" style="text-align:center;">Aún no hay profesores registrados.</td></tr>`;
+                } else {
+                    profesores.forEach(p => {
+                        html += `<tr><td>${p.nombreCompleto}</td><td>${p.correo}</td><td>Profesor</td><td><button class="btn-secundario">Editar</button></td></tr>`;
+                    });
+                }
                 tabla.innerHTML = html;
             }
         }
@@ -135,7 +135,16 @@ async function cargarCursos() {
             if(tabla) {
                 let html = '<tr><th>ID</th><th>Título</th><th>Descripción</th><th>Acciones</th></tr>';
                 cursos.forEach(c => {
-                    html += `<tr><td>${c.id}</td><td>${c.titulo}</td><td>${c.descripcion.substring(0,40)}...</td><td><button class="btn-secundario">Editar</button></td></tr>`;
+                    // AQUÍ ESTÁN TUS BOTONES DE REGRESO
+                    html += `<tr>
+                        <td>${c.id}</td>
+                        <td>${c.titulo}</td>
+                        <td>${c.descripcion.substring(0,40)}...</td>
+                        <td>
+                            <button class="btn-secundario">Editar</button>
+                            <button class="btn-primary" onclick="gestionarLecciones(${c.id}, '${c.titulo}')" style="margin-left: 5px;"><i class="fa-solid fa-video"></i> Lecciones</button>
+                        </td>
+                    </tr>`;
                 });
                 tabla.innerHTML = html;
             }
@@ -148,7 +157,7 @@ async function cargarAlumnos() {
         const res = await fetch(URL_API_USUARIOS);
         if(res.ok) {
             const usuarios = await res.json();
-            const alumnos = usuarios.filter(u => u.rol === 'ALUMNO');
+            const alumnos = usuarios.filter(u => u.rol === 'ALUMNO' || u.rol === 'CLIENTE');
             const tabla = document.querySelector('#sec-alumnos .admin-table');
             if(tabla) {
                 let html = '<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>';
@@ -162,7 +171,47 @@ async function cargarAlumnos() {
 }
 
 // ==========================================
-// 5. CERRAR SESIÓN Y MÓVILES
+// 5. FORMULARIO PARA REGISTRAR PROFESORES
+// ==========================================
+function configurarFormularioProfesor() {
+    const formProfesor = document.getElementById('formProfesor');
+    if(formProfesor) {
+        formProfesor.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const inputs = formProfesor.querySelectorAll('input');
+
+            // Tomamos los datos del formulario web
+            const nuevoProfesor = {
+                nombreCompleto: inputs[0].value,
+                correo: inputs[1].value,
+                rol: "PROFESOR"
+            };
+
+            try {
+                // Lo mandamos a la puerta de registro de Java
+                const respuesta = await fetch(URL_API_USUARIOS + '/registro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoProfesor)
+                });
+
+                if(respuesta.ok) {
+                    alert("¡Profesor registrado con éxito! Su contraseña temporal fue enviada al correo.");
+                    formProfesor.reset(); // Limpiamos los campos
+                    cargarProfesores(); // Recargamos la tabla al instante
+                } else {
+                    const error = await respuesta.text();
+                    alert("No se pudo registrar: " + error);
+                }
+            } catch(error) {
+                alert("Error de conexión al intentar guardar al profesor.");
+            }
+        });
+    }
+}
+
+// ==========================================
+// 6. CERRAR SESIÓN Y MÓVILES
 // ==========================================
 document.getElementById('btnSalir').addEventListener('click', () => {
     localStorage.removeItem('usuarioAuraLearn');
@@ -177,7 +226,7 @@ if(btnMenu) {
 }
 
 // ==========================================
-// 6. LÓGICA DE LECCIONES (VIDEOS YOUTUBE)
+// 7. LÓGICA DE LECCIONES (VIDEOS YOUTUBE)
 // ==========================================
 window.gestionarLecciones = function(cursoId, tituloCurso) {
     document.getElementById('tituloModalLecciones').textContent = `Videos: ${tituloCurso}`;
