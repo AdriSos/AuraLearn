@@ -16,9 +16,18 @@ document.getElementById('btnSalir').addEventListener('click', () => {
     window.location.href = 'login.html';
 });
 
-// ==========================================
+
+// MENÚ HAMBURGUESA PARA MÓVILES
+const btnMenu = document.getElementById('btn-menu');
+const sidebar = document.querySelector('.sidebar');
+
+if (btnMenu) {
+    btnMenu.addEventListener('click', () => {
+        sidebar.classList.toggle('mostrar');
+    });
+}
+
 // 2. NAVEGACIÓN DEL MENÚ LATERAL
-// ==========================================
 const menuLinks = document.querySelectorAll('.nav-links a');
 const secciones = document.querySelectorAll('.vista-admin');
 

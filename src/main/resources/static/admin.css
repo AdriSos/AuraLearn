@@ -94,3 +94,35 @@ header { margin-bottom: 30px; }
     background-color: #17a2b8; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-weight: bold;
 }
 .btn-ver-video:hover { background-color: #138496; }
+
+/* ==========================================
+   DISEÑO RESPONSIVO (MÓVILES)
+   ========================================== */
+.admin-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+.btn-toggle { background: none; border: none; color: #08606E; font-size: 1.8rem; cursor: pointer; display: none; }
+
+@media (max-width: 768px) {
+    /* 1. Mostramos el botón de menú */
+    .btn-toggle { display: block; }
+
+    /* 2. Achicamos textos para que quepan */
+    .admin-header h1 { font-size: 1.3rem; }
+    .main-content { padding: 20px; }
+
+    /* 3. Acomodamos formularios y tarjetas */
+    .dashboard-cards { grid-template-columns: 1fr; }
+    .admin-form .input-row { flex-direction: column; gap: 0; }
+
+    /* 4. Hacemos que la tabla se pueda deslizar de lado a lado */
+    .admin-table { display: block; overflow-x: auto; white-space: nowrap; }
+
+    /* 5. MAGIA DEL MENÚ LATERAL (Lo escondemos a la izquierda) */
+    .sidebar {
+        position: fixed; left: -250px; top: 0; height: 100vh;
+        z-index: 1000; transition: left 0.3s ease;
+        box-shadow: 2px 0 15px rgba(0,0,0,0.8);
+    }
+
+    /* Esta clase se la pondrá JavaScript cuando hagamos clic */
+    .sidebar.mostrar { left: 0; }
+}
