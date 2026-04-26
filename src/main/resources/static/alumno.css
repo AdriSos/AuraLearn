@@ -1,0 +1,74 @@
+/* Variables para el Tema Oscuro (Por defecto) */
+:root {
+    --bg-color: #121212;
+    --text-color: #ffffff;
+    --sidebar-bg: #1a1a1a;
+    --card-bg: #1e1e1e;
+    --border-color: #333333;
+    --primary-color: #08606E;
+    --primary-hover: #064a55;
+}
+
+/* Variables para el Tema Claro */
+body.light-mode {
+    --bg-color: #f4f6f9;
+    --text-color: #2c3e50;
+    --sidebar-bg: #ffffff;
+    --card-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --primary-color: #08606E;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+body {
+    display: flex; min-height: 100vh;
+    background-color: var(--bg-color); color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.highlight { color: var(--primary-color); }
+
+/* Menú Lateral */
+.sidebar { width: 250px; background-color: var(--sidebar-bg); padding: 20px 0; display: flex; flex-direction: column; border-right: 2px solid var(--primary-color); transition: background-color 0.3s; }
+.sidebar-header { text-align: center; margin-bottom: 30px; }
+.sidebar-header h2 { font-size: 2rem; }
+.sidebar-header p { color: #888; font-size: 0.9rem; margin-top: 5px;}
+
+.nav-links { list-style: none; flex-grow: 1; }
+.nav-links a { display: block; padding: 15px 20px; color: var(--text-color); text-decoration: none; transition: 0.3s; }
+.nav-links a i { margin-right: 10px; width: 20px; text-align: center; }
+.nav-links a:hover, .nav-links li.active a { background-color: var(--primary-color); color: white; border-radius: 0 20px 20px 0; margin-right: 15px;}
+
+.logout { padding: 20px; }
+.logout button { width: 100%; padding: 10px; background-color: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+.logout button:hover { background-color: #dc3545; color: white; }
+
+/* Contenido Principal */
+.main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+.alumno-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.header-izq { display: flex; align-items: center; gap: 15px; }
+.subtitle { color: #888; margin-bottom: 30px; }
+
+/* Botones Superiores */
+.btn-toggle { background: none; border: none; color: var(--primary-color); font-size: 1.8rem; cursor: pointer; display: none; }
+.btn-tema { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 10px 15px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+.btn-tema:hover { border-color: var(--primary-color); color: var(--primary-color); }
+
+/* Grid de Cursos */
+.cursos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+.curso-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s; display: flex; flex-direction: column;}
+.curso-card:hover { transform: translateY(-5px); border-color: var(--primary-color); }
+.curso-card h3 { font-size: 1.2rem; margin-bottom: 10px; color: var(--primary-color);}
+.curso-card .profesor { font-size: 0.85rem; font-weight: bold; color: #888; margin-bottom: 15px; }
+.curso-card p { font-size: 0.95rem; margin-bottom: 20px; flex-grow: 1; line-height: 1.5; }
+.btn-empezar { width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+.btn-empezar:hover { background-color: var(--primary-hover); }
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .btn-toggle { display: block; }
+    .main-content { padding: 20px; }
+    .sidebar { position: fixed; left: -250px; top: 0; height: 100vh; z-index: 1000; box-shadow: 2px 0 15px rgba(0,0,0,0.5); }
+    .sidebar.mostrar { left: 0; }
+}

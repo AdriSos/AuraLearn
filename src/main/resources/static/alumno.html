@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraLearn - Mis Cursos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="alumno.css">
+</head>
+<body>
+
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <h2>Aura<span class="highlight">Learn</span></h2>
+        <p>Panel de Estudiante</p>
+    </div>
+    <ul class="nav-links">
+        <li class="active"><a href="#Cursos" id="linkCursos"><i class="fa-solid fa-graduation-cap"></i> Cursos Disponibles</a></li>
+        <li><a href="#Perfil" id="linkPerfil"><i class="fa-solid fa-user-gear"></i> Mi Perfil</a></li>
+    </ul>
+    <div class="logout">
+        <button id="btnSalir"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+    </div>
+</nav>
+
+<main class="main-content">
+    <header class="alumno-header">
+        <div class="header-izq">
+            <button id="btn-menu" class="btn-toggle"><i class="fa-solid fa-bars"></i></button>
+            <h1 id="saludoAlumno">¡Hola, Estudiante!</h1>
+        </div>
+        <button id="btnTema" class="btn-tema" title="Cambiar Tema"><i class="fa-solid fa-moon"></i></button>
+    </header>
+
+    <div id="sec-cursos" class="vista-alumno">
+        <p class="subtitle">Explora y comienza tu aprendizaje paso a paso.</p>
+        <div id="gridCursos" class="cursos-grid">
+            <p>Cargando cursos...</p>
+        </div>
+    </div>
+
+    <div id="sec-perfil" class="vista-alumno" style="display: none;">
+        <h2>Configuración de Perfil</h2>
+        <p>Aquí pondremos el cambio de contraseñas y foto de perfil.</p>
+    </div>
+
+</main>
+
+<script src="alumno.js"></script>
+</body>
+</html>
