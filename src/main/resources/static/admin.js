@@ -1,3 +1,6 @@
+// ==========================================
+// 1. SEGURIDAD Y CIERRE DE SESIÓN
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const usuarioString = localStorage.getItem('usuarioAuraLearn');
     if (!usuarioString) { window.location.href = 'login.html'; return; }
@@ -13,17 +16,24 @@ document.getElementById('btnSalir').addEventListener('click', () => {
     window.location.href = 'login.html';
 });
 
-// menu lateral
+// ==========================================
+// 2. NAVEGACIÓN DEL MENÚ LATERAL
+// ==========================================
 const menuLinks = document.querySelectorAll('.nav-links a');
 const secciones = document.querySelectorAll('.vista-admin');
 
 menuLinks.forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
+        
+        // Quitar la clase active a todos y ponérsela al que le dimos clic
         document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
         link.parentElement.classList.add('active');
+        
+        // Ocultar todas las secciones
         secciones.forEach(sec => sec.style.display = 'none');
 
+        // Mostrar la sección correspondiente
         if(link.textContent.includes('Dashboard')) {
             document.getElementById('sec-dashboard').style.display = 'block';
         } else if(link.textContent.includes('Profesores')) {
@@ -37,7 +47,9 @@ menuLinks.forEach(link => {
     });
 });
 
-// crud (profesor)
+// ==========================================
+// 3. LÓGICA DE PROFESORES (CRUD)
+// ==========================================
 const formProfesor = document.getElementById('formProfesor');
 const URL_API_PROFESORES = 'https://auralearn-pfxs.onrender.com/api/profesores';
 let idProfesorEditando = null;
@@ -134,7 +146,9 @@ window.eliminarProfesor = async function(id) {
     }
 };
 
-// crud(cursos)
+// ==========================================
+// 4. LÓGICA DE CURSOS (CRUD)
+// ==========================================
 const formCurso = document.getElementById('formCurso');
 const URL_API_CURSOS = 'https://auralearn-pfxs.onrender.com/api/cursos';
 let idCursoEditando = null;
@@ -200,11 +214,11 @@ async function cargarCursos() {
         const respuesta = await fetch(URL_API_CURSOS);
         if(respuesta.ok) {
             const cursos = await respuesta.json();
-            tbody.innerHTML = ""; 
+            tbody.innerHTML = "";
             if(cursos.length === 0) { tbody.innerHTML = "<tr><td colspan='4'>No hay cursos registrados.</td></tr>"; return; }
 
             cursos.forEach(curso => {
-                const nombreProf = curso.profesor ? curso.profesor.nombre : "Sin asignar"; 
+                const nombreProf = curso.profesor ? curso.profesor.nombre : "Sin asignar";
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${curso.titulo}</strong></td>
@@ -228,7 +242,7 @@ window.prepararEdicionCurso = function(id, titulo, descripcion, profesorId) {
     document.getElementById('cursoProfesor').value = profesorId;
     document.getElementById('btnGuardarCurso').textContent = "Actualizar Curso";
     document.getElementById('btnCancelarCurso').style.display = "inline-block";
-    window.scrollTo(0, 0); 
+    window.scrollTo(0, 0);
 };
 
 window.cancelarEdicionCurso = function() {
@@ -252,22 +266,19 @@ window.eliminarCurso = async function(id) {
 // ==========================================
 const URL_API_LECCIONES = 'https://auralearn-pfxs.onrender.com/api/lecciones';
 
-// 1. Abrir la ventana emergente
 window.gestionarLecciones = function(cursoId, tituloCurso) {
     document.getElementById('tituloModalLecciones').textContent = `Videos: ${tituloCurso}`;
     document.getElementById('leccionCursoId').value = cursoId;
     document.getElementById('modalLecciones').style.display = 'block';
-    document.getElementById('reproductorVideo').style.display = 'none'; // Ocultar reproductor al inicio
+    document.getElementById('reproductorVideo').style.display = 'none';
     cargarLecciones(cursoId);
 };
 
-// 2. Cerrar la ventana y apagar el video
 window.cerrarModalLecciones = function() {
     document.getElementById('modalLecciones').style.display = 'none';
-    document.getElementById('iframeYouTube').src = ""; // Esto detiene el video si se estaba reproduciendo
+    document.getElementById('iframeYouTube').src = "";
 };
 
-// 3. Transformar Link Normal -> Link Incrustable (Embed)
 function transformarUrlYouTube(url) {
     let videoId = "";
     if (url.includes("youtu.be/")) {
@@ -278,7 +289,6 @@ function transformarUrlYouTube(url) {
     return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
 }
 
-// 4. Guardar un nuevo video
 document.getElementById('formLeccion').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btnGuardar = document.getElementById('btnGuardarLeccion');
@@ -286,8 +296,6 @@ document.getElementById('formLeccion').addEventListener('submit', async (e) => {
 
     const cursoId = document.getElementById('leccionCursoId').value;
     const urlCruda = document.getElementById('leccionUrl').value;
-
-    // Convertimos el link al formato seguro de Iframe
     const urlEmbed = transformarUrlYouTube(urlCruda);
 
     const datosLeccion = {
@@ -307,7 +315,7 @@ document.getElementById('formLeccion').addEventListener('submit', async (e) => {
         if(respuesta.ok) {
             document.getElementById('leccionTitulo').value = '';
             document.getElementById('leccionUrl').value = '';
-            cargarLecciones(cursoId); // Recargar la lista
+            cargarLecciones(cursoId);
         } else {
             alert("Error al guardar el video.");
         }
@@ -315,7 +323,6 @@ document.getElementById('formLeccion').addEventListener('submit', async (e) => {
     finally { btnGuardar.disabled = false; }
 });
 
-// 5. Cargar lista de videos
 async function cargarLecciones(cursoId) {
     const lista = document.getElementById('listaLecciones');
     lista.innerHTML = "<li>Cargando videos...</li>";
@@ -342,13 +349,11 @@ async function cargarLecciones(cursoId) {
     } catch (error) { lista.innerHTML = "<li>Error al cargar videos.</li>"; }
 }
 
-// 6. ¡Reproducir el video dentro de la página!
 window.reproducirVideo = function(urlEmbed) {
     document.getElementById('reproductorVideo').style.display = 'block';
     document.getElementById('iframeYouTube').src = urlEmbed;
 };
 
-// 7. Eliminar Video
 window.eliminarLeccion = async function(idLeccion, cursoId) {
     if(confirm("¿Estás seguro de borrar este video?")) {
         await fetch(`${URL_API_LECCIONES}/${idLeccion}`, { method: 'DELETE' });
@@ -356,5 +361,4 @@ window.eliminarLeccion = async function(idLeccion, cursoId) {
         document.getElementById('reproductorVideo').style.display = 'none';
         document.getElementById('iframeYouTube').src = '';
     }
-};
 };
