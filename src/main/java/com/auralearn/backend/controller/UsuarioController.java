@@ -104,4 +104,13 @@ public class UsuarioController {
     public java.util.List<Usuario> obtenerTodosLosUsuarios() {
         return usuarioRepository.findAll();
     }
+
+    // PUERTA PARA ELIMINAR USUARIOS
+    @DeleteMapping("/{id}")
+    public org.springframework.http.ResponseEntity<?> eliminarUsuario(@PathVariable Long id) {
+        return usuarioRepository.findById(id).map(usuario -> {
+            usuarioRepository.delete(usuario);
+            return org.springframework.http.ResponseEntity.ok().build();
+        }).orElse(org.springframework.http.ResponseEntity.notFound().build());
+    }
 }

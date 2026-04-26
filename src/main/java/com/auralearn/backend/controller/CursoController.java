@@ -35,11 +35,13 @@ public class CursoController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // PUERTA PARA ELIMINAR CURSOS
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarCurso(@PathVariable Long id) {
+    public org.springframework.http.ResponseEntity<?> eliminarCurso(@PathVariable Long id) {
         return cursoRepository.findById(id).map(curso -> {
+            // Usamos cursoRepository en lugar de usuarioRepository
             cursoRepository.delete(curso);
-            return ResponseEntity.ok().build();
-        }).orElse(ResponseEntity.notFound().build());
+            return org.springframework.http.ResponseEntity.ok().build();
+        }).orElse(org.springframework.http.ResponseEntity.notFound().build());
     }
 }

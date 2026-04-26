@@ -3,40 +3,34 @@ const URL_API_CURSOS = 'https://auralearn-pfxs.onrender.com/api/cursos';
 const URL_API_LECCIONES = 'https://auralearn-pfxs.onrender.com/api/lecciones';
 
 let adminActual = null;
+let cursosGlobales = [];
 
 // ==========================================
-// 1. INICIALIZACIÓN Y SEGURIDAD
+// 1. INICIALIZACIÓN
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const adminString = localStorage.getItem('usuarioAuraLearn');
-    if (!adminString) {
-        window.location.href = 'login.html';
-        return;
-    }
+    if (!adminString) { window.location.href = 'login.html'; return; }
 
     adminActual = JSON.parse(adminString);
-
     if (adminActual.rol !== 'ADMINISTRADOR') {
-        alert("Acceso denegado. No tienes permisos de administrador.");
-        window.location.href = 'alumno.html';
-        return;
+        alert("Acceso denegado."); window.location.href = 'alumno.html'; return;
     }
 
-    // Cargamos la información inicial
     cargarEstadisticasDashboard();
     cargarProfesores();
     cargarCursos();
     cargarAlumnos();
-    configurarFormularioProfesor(); // Activamos el botón para guardar profesores
+    configurarFormularioProfesor();
+    configurarFormularioCurso();
 });
 
 // ==========================================
-// 2. NAVEGACIÓN DEL MENÚ LATERAL
+// 2. NAVEGACIÓN
 // ==========================================
 function ocultarTodasLasSecciones() {
     ['sec-dashboard', 'sec-profesores', 'sec-cursos', 'sec-alumnos'].forEach(id => {
-        const sec = document.getElementById(id);
-        if (sec) sec.style.display = 'none';
+        const sec = document.getElementById(id); if (sec) sec.style.display = 'none';
     });
 }
 
@@ -47,68 +41,43 @@ document.querySelectorAll('.nav-links a').forEach(enlace => {
         e.target.closest('li').classList.add('active');
         ocultarTodasLasSecciones();
 
-        const textoEnlace = e.target.textContent.toLowerCase();
-
-        if (textoEnlace.includes('dashboard')) {
-            const sec = document.getElementById('sec-dashboard');
-            if(sec) sec.style.display = 'block';
-            cargarEstadisticasDashboard();
-        }
-        else if (textoEnlace.includes('profesores')) {
-            const sec = document.getElementById('sec-profesores');
-            if(sec) sec.style.display = 'block';
-            cargarProfesores();
-        }
-        else if (textoEnlace.includes('cursos')) {
-            const sec = document.getElementById('sec-cursos');
-            if(sec) sec.style.display = 'block';
-            cargarCursos();
-        }
-        else if (textoEnlace.includes('alumnos')) {
-            const sec = document.getElementById('sec-alumnos');
-            if(sec) sec.style.display = 'block';
-            cargarAlumnos();
-        }
+        const texto = e.target.textContent.toLowerCase();
+        if (texto.includes('dashboard')) { document.getElementById('sec-dashboard').style.display = 'block'; cargarEstadisticasDashboard(); }
+        else if (texto.includes('profesores')) { document.getElementById('sec-profesores').style.display = 'block'; cargarProfesores(); }
+        else if (texto.includes('cursos')) { document.getElementById('sec-cursos').style.display = 'block'; cargarCursos(); }
+        else if (texto.includes('alumnos')) { document.getElementById('sec-alumnos').style.display = 'block'; cargarAlumnos(); }
     });
 });
 
 // ==========================================
-// 3. CARGAR ESTADÍSTICAS DEL DASHBOARD
+// 3. DASHBOARD
 // ==========================================
-async function cargarEstadisticasDashboard() {
+window.cargarEstadisticasDashboard = async function() {
     try {
         const resUsuarios = await fetch(URL_API_USUARIOS);
         if (resUsuarios.ok) {
             const usuarios = await resUsuarios.json();
-            // Contamos alumnos y a los que se registraron como "CLIENTE"
             const alumnos = usuarios.filter(u => u.rol === 'ALUMNO' || u.rol === 'CLIENTE');
-            const totalAlumnosElement = document.getElementById('totalAlumnos');
-            if(totalAlumnosElement) totalAlumnosElement.textContent = alumnos.length;
+            if(document.getElementById('totalAlumnos')) document.getElementById('totalAlumnos').textContent = alumnos.length;
         }
 
         const resCursos = await fetch(URL_API_CURSOS);
         if (resCursos.ok) {
             const cursos = await resCursos.json();
-            const totalCursosElement = document.getElementById('totalCursos');
-            const cursoPopularElement = document.getElementById('cursoPopular');
-
-            if(totalCursosElement) totalCursosElement.textContent = cursos.length;
-            if(cursoPopularElement) {
-                cursoPopularElement.textContent = cursos.length > 0 ? cursos[0].titulo : "Aún no hay cursos";
-            }
+            if(document.getElementById('totalCursos')) document.getElementById('totalCursos').textContent = cursos.length;
+            if(document.getElementById('cursoPopular')) document.getElementById('cursoPopular').textContent = cursos.length > 0 ? cursos[0].titulo : "Aún no hay cursos";
         }
-    } catch (error) { console.error("Error cargando el dashboard:", error); }
+    } catch (error) { console.error("Error dashboard:", error); }
 }
 
 // ==========================================
-// 4. LLENAR LAS TABLAS (PROFESORES, CURSOS, ALUMNOS)
+// 4. TABLAS (AHORA CON BOTONES DE COLORES)
 // ==========================================
-async function cargarProfesores() {
+window.cargarProfesores = async function() {
     try {
         const res = await fetch(URL_API_USUARIOS);
         if(res.ok) {
             const usuarios = await res.json();
-            // Filtramos a los que sí tengan el rol correcto
             const profesores = usuarios.filter(u => u.rol && u.rol.toUpperCase() === 'PROFESOR');
             const tabla = document.querySelector('#sec-profesores .admin-table');
             if(tabla) {
@@ -117,31 +86,45 @@ async function cargarProfesores() {
                     html += `<tr><td colspan="4" style="text-align:center;">Aún no hay profesores registrados.</td></tr>`;
                 } else {
                     profesores.forEach(p => {
-                        html += `<tr><td>${p.nombreCompleto}</td><td>${p.correo}</td><td>Profesor</td><td><button class="btn-secundario">Editar</button></td></tr>`;
+                        html += `<tr>
+                            <td>${p.nombreCompleto}</td>
+                            <td>${p.correo}</td>
+                            <td>Profesor</td>
+                            <td>
+                                <button class="btn-editar" onclick="editarProfesor(${p.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+                                <button class="btn-eliminar-tabla" onclick="eliminarProfesor(${p.id})" style="margin-left: 5px;"><i class="fa-solid fa-trash"></i> Eliminar</button>
+                            </td>
+                        </tr>`;
                     });
                 }
                 tabla.innerHTML = html;
             }
+
+            const selectProfesor = document.querySelector('#sec-cursos select');
+            if(selectProfesor) {
+                selectProfesor.innerHTML = '<option value="">Selecciona un profesor...</option>';
+                profesores.forEach(p => { selectProfesor.innerHTML += `<option value="${p.id}">${p.nombreCompleto}</option>`; });
+            }
         }
-    } catch(e) { console.error("Error cargando profesores", e); }
+    } catch(e) { console.error("Error profesores:", e); }
 }
 
-async function cargarCursos() {
+window.cargarCursos = async function() {
     try {
         const res = await fetch(URL_API_CURSOS);
         if(res.ok) {
-            const cursos = await res.json();
+            cursosGlobales = await res.json();
             const tabla = document.querySelector('#sec-cursos .admin-table');
             if(tabla) {
                 let html = '<tr><th>ID</th><th>Título</th><th>Descripción</th><th>Acciones</th></tr>';
-                cursos.forEach(c => {
-                    // AQUÍ ESTÁN TUS BOTONES DE REGRESO
+                cursosGlobales.forEach(c => {
                     html += `<tr>
                         <td>${c.id}</td>
                         <td>${c.titulo}</td>
-                        <td>${c.descripcion.substring(0,40)}...</td>
+                        <td>${c.descripcion.substring(0,30)}...</td>
                         <td>
-                            <button class="btn-secundario">Editar</button>
+                            <button class="btn-editar" onclick="editarCurso(${c.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+                            <button class="btn-eliminar-tabla" onclick="eliminarCurso(${c.id})" style="margin-left: 5px;"><i class="fa-solid fa-trash"></i> Eliminar</button>
                             <button class="btn-primary" onclick="gestionarLecciones(${c.id}, '${c.titulo}')" style="margin-left: 5px;"><i class="fa-solid fa-video"></i> Lecciones</button>
                         </td>
                     </tr>`;
@@ -149,10 +132,10 @@ async function cargarCursos() {
                 tabla.innerHTML = html;
             }
         }
-    } catch(e) { console.error("Error cargando cursos", e); }
+    } catch(e) { console.error("Error cursos:", e); }
 }
 
-async function cargarAlumnos() {
+window.cargarAlumnos = async function() {
     try {
         const res = await fetch(URL_API_USUARIOS);
         if(res.ok) {
@@ -162,72 +145,98 @@ async function cargarAlumnos() {
             if(tabla) {
                 let html = '<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>';
                 alumnos.forEach(a => {
-                    html += `<tr><td>${a.nombreCompleto}</td><td>${a.correo}</td><td>Alumno</td><td><button class="btn-secundario">Editar</button></td></tr>`;
+                    html += `<tr>
+                        <td>${a.nombreCompleto}</td>
+                        <td>${a.correo}</td>
+                        <td>Alumno</td>
+                        <td>
+                            <button class="btn-eliminar-tabla" onclick="eliminarProfesor(${a.id})"><i class="fa-solid fa-trash"></i> Eliminar</button>
+                        </td>
+                    </tr>`;
                 });
                 tabla.innerHTML = html;
             }
         }
-    } catch(e) { console.error("Error cargando alumnos", e); }
+    } catch(e) { console.error("Error alumnos:", e); }
 }
 
 // ==========================================
-// 5. FORMULARIO PARA REGISTRAR PROFESORES
+// 5. FORMULARIOS
 // ==========================================
-function configurarFormularioProfesor() {
+window.configurarFormularioProfesor = function() {
     const formProfesor = document.getElementById('formProfesor');
     if(formProfesor) {
         formProfesor.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = formProfesor.querySelector('button'); btn.textContent = "Guardando..."; btn.disabled = true;
             const inputs = formProfesor.querySelectorAll('input');
-
-            // Tomamos los datos del formulario web
-            const nuevoProfesor = {
-                nombreCompleto: inputs[0].value,
-                correo: inputs[1].value,
-                rol: "PROFESOR"
-            };
+            const nuevo = { nombreCompleto: inputs[0].value, correo: inputs[1].value, rol: "PROFESOR" };
 
             try {
-                // Lo mandamos a la puerta de registro de Java
-                const respuesta = await fetch(URL_API_USUARIOS + '/registro', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(nuevoProfesor)
-                });
+                const res = await fetch(URL_API_USUARIOS + '/registro', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevo) });
+                let divMsg = document.getElementById('msgProfesor') || document.createElement('div');
+                divMsg.id = 'msgProfesor'; divMsg.style.padding = "10px"; divMsg.style.marginTop = "10px"; formProfesor.appendChild(divMsg);
+                if(res.ok) {
+                    divMsg.textContent = "¡Profesor registrado!"; divMsg.style.color = "green";
+                    formProfesor.reset(); cargarProfesores();
+                } else { divMsg.textContent = "Error al registrar."; divMsg.style.color = "red"; }
+                setTimeout(() => divMsg.textContent = "", 4000);
+            } catch(error) { alert("Error."); } finally { btn.textContent = "Guardar Profesor"; btn.disabled = false; }
+        });
+    }
+}
 
-                if(respuesta.ok) {
-                    alert("¡Profesor registrado con éxito! Su contraseña temporal fue enviada al correo.");
-                    formProfesor.reset(); // Limpiamos los campos
-                    cargarProfesores(); // Recargamos la tabla al instante
-                } else {
-                    const error = await respuesta.text();
-                    alert("No se pudo registrar: " + error);
-                }
-            } catch(error) {
-                alert("Error de conexión al intentar guardar al profesor.");
-            }
+window.configurarFormularioCurso = function() {
+    const sec = document.getElementById('sec-cursos');
+    if(!sec) return;
+    const btn = sec.querySelector('button');
+    if(btn) {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const inputs = sec.querySelectorAll('input, select, textarea');
+            if(!inputs[0].value || !inputs[2].value) { alert("Llena el título y descripción."); return; }
+            const nuevo = { titulo: inputs[0].value, descripcion: inputs[2].value, profesor: inputs[1].value ? { id: parseInt(inputs[1].value) } : null };
+            btn.textContent = "Guardando...";
+            try {
+                const res = await fetch(URL_API_CURSOS, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevo) });
+                if(res.ok) { alert("¡Curso guardado!"); inputs[0].value=''; inputs[1].value=''; inputs[2].value=''; cargarCursos(); }
+                else { alert("Error."); }
+            } catch(err) { alert("Error."); } finally { btn.textContent = "Guardar Curso"; }
         });
     }
 }
 
 // ==========================================
-// 6. CERRAR SESIÓN Y MÓVILES
+// 6. ACCIONES: EDITAR Y ELIMINAR
 // ==========================================
-document.getElementById('btnSalir').addEventListener('click', () => {
-    localStorage.removeItem('usuarioAuraLearn');
-    window.location.href = 'login.html';
-});
+window.editarCurso = function(id) { alert("Función de actualizar en construcción."); }
+window.editarProfesor = function(id) { alert("Función de editar profesor en construcción."); }
 
-const btnMenu = document.getElementById('btn-menu');
-if(btnMenu) {
-    btnMenu.addEventListener('click', () => {
-        document.querySelector('.sidebar').classList.toggle('mostrar');
-    });
+window.eliminarProfesor = async function(id) {
+    if(confirm("¿Estás seguro de eliminar a este usuario?")) {
+        try {
+            const res = await fetch(`${URL_API_USUARIOS}/${id}`, { method: 'DELETE' });
+            if(res.ok) { alert("Eliminado."); cargarProfesores(); cargarAlumnos(); }
+            else { alert("Error. Recuerda agregar el @DeleteMapping en Java."); }
+        } catch(e) { alert("Error de conexión."); }
+    }
+}
+
+window.eliminarCurso = async function(id) {
+    if(confirm("¿Seguro que quieres borrar el curso? Esto borrará sus videos también.")) {
+        try {
+            const res = await fetch(`${URL_API_CURSOS}/${id}`, { method: 'DELETE' });
+            if(res.ok) { alert("Curso eliminado."); cargarCursos(); }
+            else { alert("Error. Recuerda agregar el @DeleteMapping en CursoController.java."); }
+        } catch(e) { alert("Error de conexión."); }
+    }
 }
 
 // ==========================================
-// 7. LÓGICA DE LECCIONES (VIDEOS YOUTUBE)
+// 7. CERRAR SESIÓN Y LECCIONES (YOUTUBE)
 // ==========================================
+document.getElementById('btnSalir').addEventListener('click', () => { localStorage.removeItem('usuarioAuraLearn'); window.location.href = 'login.html'; });
+
 window.gestionarLecciones = function(cursoId, tituloCurso) {
     document.getElementById('tituloModalLecciones').textContent = `Videos: ${tituloCurso}`;
     document.getElementById('leccionCursoId').value = cursoId;
@@ -236,94 +245,46 @@ window.gestionarLecciones = function(cursoId, tituloCurso) {
     cargarLecciones(cursoId);
 };
 
-window.cerrarModalLecciones = function() {
-    document.getElementById('modalLecciones').style.display = 'none';
-    document.getElementById('iframeYouTube').src = "";
-};
+window.cerrarModalLecciones = function() { document.getElementById('modalLecciones').style.display = 'none'; document.getElementById('iframeYouTube').src = ""; };
 
 function transformarUrlYouTube(url) {
     let videoId = "";
-    if (url.includes("youtu.be/")) {
-        videoId = url.split("youtu.be/")[1].split("?")[0];
-    } else if (url.includes("watch?v=")) {
-        videoId = url.split("watch?v=")[1].split("&")[0];
-    }
-    if (videoId) {
-        return `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&iv_load_policy=3`;
-    }
-    return url;
+    if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
+    else if (url.includes("watch?v=")) videoId = url.split("watch?v=")[1].split("&")[0];
+    return videoId ? `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&iv_load_policy=3` : url;
 }
 
-document.getElementById('formLeccion').addEventListener('submit', async (e) => {
+document.getElementById('formLeccion')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const btnGuardar = document.getElementById('btnGuardarLeccion');
-    btnGuardar.disabled = true;
-
+    const btn = document.getElementById('btnGuardarLeccion'); btn.disabled = true;
     const cursoId = document.getElementById('leccionCursoId').value;
-    const urlCruda = document.getElementById('leccionUrl').value;
-    const urlEmbed = transformarUrlYouTube(urlCruda);
-
-    const datosLeccion = {
-        titulo: document.getElementById('leccionTitulo').value,
-        urlVideo: urlEmbed,
-        orden: 1,
-        curso: { id: parseInt(cursoId) }
-    };
-
+    const urlEmbed = transformarUrlYouTube(document.getElementById('leccionUrl').value);
+    const datos = { titulo: document.getElementById('leccionTitulo').value, urlVideo: urlEmbed, orden: 1, curso: { id: parseInt(cursoId) } };
     try {
-        const respuesta = await fetch(URL_API_LECCIONES, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datosLeccion)
-        });
-
-        if(respuesta.ok) {
-            document.getElementById('leccionTitulo').value = '';
-            document.getElementById('leccionUrl').value = '';
-            cargarLecciones(cursoId);
-        } else {
-            alert("Error al guardar el video.");
-        }
-    } catch(error) { alert("Error de conexión."); }
-    finally { btnGuardar.disabled = false; }
+        const res = await fetch(URL_API_LECCIONES, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos) });
+        if(res.ok) { document.getElementById('leccionTitulo').value = ''; document.getElementById('leccionUrl').value = ''; cargarLecciones(cursoId); }
+        else alert("Error.");
+    } catch(err) { alert("Error."); } finally { btn.disabled = false; }
 });
 
-async function cargarLecciones(cursoId) {
-    const lista = document.getElementById('listaLecciones');
-    lista.innerHTML = "<li>Cargando videos...</li>";
-
+window.cargarLecciones = async function(cursoId) {
+    const lista = document.getElementById('listaLecciones'); lista.innerHTML = "<li>Cargando...</li>";
     try {
-        const respuesta = await fetch(`${URL_API_LECCIONES}/curso/${cursoId}`);
-        if(respuesta.ok) {
-            const lecciones = await respuesta.json();
-            lista.innerHTML = "";
-            if(lecciones.length === 0) { lista.innerHTML = "<li>Aún no hay videos para este curso.</li>"; return; }
-
+        const res = await fetch(`${URL_API_LECCIONES}/curso/${cursoId}`);
+        if(res.ok) {
+            const lecciones = await res.json();
+            lista.innerHTML = lecciones.length === 0 ? "<li>Sin videos.</li>" : "";
             lecciones.forEach(lec => {
-                lista.innerHTML += `
-                    <li>
-                        <span><strong>${lec.titulo}</strong></span>
-                        <div>
-                            <button onclick="reproducirVideo('${lec.urlVideo}')" class="btn-ver-video"><i class="fa-solid fa-play"></i> Reproducir</button>
-                            <button onclick="eliminarLeccion(${lec.id}, ${cursoId})" class="btn-accion btn-eliminar"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </li>
-                `;
+                lista.innerHTML += `<li><span><strong>${lec.titulo}</strong></span><div><button onclick="reproducirVideo('${lec.urlVideo}')" class="btn-ver-video"><i class="fa-solid fa-play"></i></button> <button onclick="eliminarLeccion(${lec.id}, ${cursoId})" class="btn-eliminar-tabla"><i class="fa-solid fa-trash"></i></button></div></li>`;
             });
         }
-    } catch (error) { lista.innerHTML = "<li>Error al cargar videos.</li>"; }
+    } catch (e) { lista.innerHTML = "<li>Error.</li>"; }
 }
 
-window.reproducirVideo = function(urlEmbed) {
-    document.getElementById('reproductorVideo').style.display = 'block';
-    document.getElementById('iframeYouTube').src = urlEmbed;
-};
-
-window.eliminarLeccion = async function(idLeccion, cursoId) {
-    if(confirm("¿Estás seguro de borrar este video?")) {
-        await fetch(`${URL_API_LECCIONES}/${idLeccion}`, { method: 'DELETE' });
-        cargarLecciones(cursoId);
-        document.getElementById('reproductorVideo').style.display = 'none';
-        document.getElementById('iframeYouTube').src = '';
+window.reproducirVideo = function(url) { document.getElementById('reproductorVideo').style.display = 'block'; document.getElementById('iframeYouTube').src = url; };
+window.eliminarLeccion = async function(id, cursoId) {
+    if(confirm("¿Borrar video?")) {
+        await fetch(`${URL_API_LECCIONES}/${id}`, { method: 'DELETE' });
+        cargarLecciones(cursoId); document.getElementById('reproductorVideo').style.display = 'none'; document.getElementById('iframeYouTube').src = '';
     }
 };
