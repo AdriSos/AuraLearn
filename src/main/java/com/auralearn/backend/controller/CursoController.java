@@ -25,14 +25,15 @@ public class CursoController {
         return ResponseEntity.ok(cursoRepository.findAll());
     }
 
+    // PUERTA PARA ACTUALIZAR CURSOS
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarCurso(@PathVariable Long id, @RequestBody Curso detalles) {
+    public org.springframework.http.ResponseEntity<?> actualizarCurso(@PathVariable Long id, @RequestBody Curso detalles) {
         return cursoRepository.findById(id).map(curso -> {
             curso.setTitulo(detalles.getTitulo());
             curso.setDescripcion(detalles.getDescripcion());
-            // Nota: Aquí no cambiamos el profesor para simplificar el CRUD
-            return ResponseEntity.ok(cursoRepository.save(curso));
-        }).orElse(ResponseEntity.notFound().build());
+            curso.setProfesor(detalles.getProfesor()); // Actualiza también al profesor asignado
+            return org.springframework.http.ResponseEntity.ok(cursoRepository.save(curso));
+        }).orElse(org.springframework.http.ResponseEntity.notFound().build());
     }
 
     // PUERTA PARA ELIMINAR CURSOS

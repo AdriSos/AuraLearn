@@ -85,19 +85,18 @@ public class UsuarioController {
     }
 
 
-    // NUEVA PUERTA PARA ACTUALIZAR USUARIOS (CONTRASEÑA Y FOTO)
     @PutMapping("/{id}")
     public org.springframework.http.ResponseEntity<Usuario> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioActualizado) {
-        return usuarioRepository.findById(id)
-                .map(usuario -> {
-                    // Actualizamos la contraseña con la nueva que mandó la página web
-                    usuario.setContrasena(usuarioActualizado.getContrasena());
+        return usuarioRepository.findById(id).map(usuario -> {
+            // Actualizamos los datos si la página web los envía
+            if(usuarioActualizado.getNombreCompleto() != null) usuario.setNombreCompleto(usuarioActualizado.getNombreCompleto());
+            if(usuarioActualizado.getCorreo() != null) usuario.setCorreo(usuarioActualizado.getCorreo());
+            if(usuarioActualizado.getContrasena() != null) usuario.setContrasena(usuarioActualizado.getContrasena());
 
-                    // Guardamos los cambios en la base de datos
-                    return org.springframework.http.ResponseEntity.ok(usuarioRepository.save(usuario));
-                })
-                .orElse(org.springframework.http.ResponseEntity.notFound().build());
+            return org.springframework.http.ResponseEntity.ok(usuarioRepository.save(usuario));
+        }).orElse(org.springframework.http.ResponseEntity.notFound().build());
     }
+
 
     // Puerta para obtener a TODOS los usuarios (Profesores y Alumnos)
     @GetMapping
