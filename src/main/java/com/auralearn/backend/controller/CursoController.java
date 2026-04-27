@@ -25,14 +25,20 @@ public class CursoController {
         return ResponseEntity.ok(cursoRepository.findAll());
     }
 
-    // PUERTA PARA ACTUALIZAR CURSOS
+    // PUERTA PARA ACTUALIZAR CURSOS (CORREGIDA ANTI ERROR 500)
     @PutMapping("/{id}")
     public org.springframework.http.ResponseEntity<?> actualizarCurso(@PathVariable Long id, @RequestBody Curso detalles) {
         return cursoRepository.findById(id).map(curso -> {
-            curso.setTitulo(detalles.getTitulo());
-            curso.setDescripcion(detalles.getDescripcion());
-            curso.setProfesor(detalles.getProfesor()); // Actualiza también al profesor asignado
-            return org.springframework.http.ResponseEntity.ok(cursoRepository.save(curso));
+            // Actualizamos los datos solo si la página los envía
+            if (detalles.getTitulo() != null) curso.setTitulo(detalles.getTitulo());
+            if (detalles.getDescripcion() != null) curso.setDescripcion(detalles.getDescripcion());
+            if (detalles.getProfesor() != null) curso.setProfesor(detalles.getProfesor());
+
+            // Guardamos en la base de datos
+            cursoRepository.save(curso);
+
+            // Devolvemos un OK vacío para evitar que Java entre en un bucle infinito
+            return org.springframework.http.ResponseEntity.ok().build();
         }).orElse(org.springframework.http.ResponseEntity.notFound().build());
     }
 
